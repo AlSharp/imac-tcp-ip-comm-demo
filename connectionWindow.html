@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Establish TCP connection</title>
+</head>
+<body>
+  <form>
+    <div>
+      <label for="port">Port</label>
+      <input type="text" id="socket-port">
+    </div>
+    <div>
+      <label for="ip">IP</label>
+      <input type="text" id="socket-ip">
+    </div>
+    <button type="submit">Connect</button>
+    <button type="submit">Cancel</button>
+  </form>
+
+  <script>
+    const electron = require('electron');
+    const {ipcRenderer} = electron;
+
+    const handleConnect = e => {
+      e.preventDefault();
+      const port = document.getElementById('socket-port').value;
+      const ip = document.getElementById('socket-ip').value;
+      ipcRenderer.send('connection:port:ip', {port, ip});
+    }
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', handleConnect);
+  </script>
+</body>
+</html>
