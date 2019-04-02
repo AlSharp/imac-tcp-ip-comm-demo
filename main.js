@@ -38,6 +38,12 @@ app.on('ready', () => {
 const handleConnectionWindowOpen = () => {
   connectionWindow = new BrowserWindow(
     {
+      parent: mainWindow,
+      modal: true,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      skipTaskbar: true,
       width: 300,
       height: 200,
       title: 'Establish TCP connection',
@@ -46,6 +52,9 @@ const handleConnectionWindowOpen = () => {
       }
     }
   );
+
+  // remove menu
+  connectionWindow.setMenu(null);
 
   // Load html into window
   connectionWindow.loadURL(url.format({
