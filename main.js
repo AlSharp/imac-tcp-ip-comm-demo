@@ -18,11 +18,10 @@ app.on('ready', () => {
   );
 
   // Load html into window
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'mainWindow.html'),
-    protocol: 'file',
-    slashes: true
-  }));
+  mainWindow.loadURL(process.env.NODE_ENV === 'production' ?
+    `file://${path.join(__dirname, '../build/index.html')}`:
+    'http://localhost:3000'
+  );
 
   // Quit app when closed
   mainWindow.on('closed', () => app.quit());
@@ -57,11 +56,10 @@ const handleConnectionWindowOpen = () => {
   connectionWindow.setMenu(null);
 
   // Load html into window
-  connectionWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'connectionWindow.html'),
-    protocol: 'file',
-    slashes: true
-  }));
+  connectionWindow.loadURL(process.env.NODE_ENV === 'production' ?
+    `file://${path.join(__dirname, '../build/index.html/#connectionWindow')}`:
+    'http://localhost:3000/#connectionWindow'
+  );
 
   // Garbage collection handle
   connectionWindow.on('close', () => {
