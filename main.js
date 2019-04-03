@@ -26,6 +26,9 @@ app.on('ready', () => {
   // Quit app when closed
   mainWindow.on('closed', () => app.quit());
 
+  // Prevent title from changing
+  mainWindow.on('page-title-updated', e => e.preventDefault());
+
   // Build menu from template
   const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
   // Insert menu
@@ -60,6 +63,9 @@ const handleConnectionWindowOpen = () => {
     `file://${path.join(__dirname, '../build/index.html/#connectionWindow')}`:
     'http://localhost:3000/#connectionWindow'
   );
+
+  // Prevent title from changing
+  connectionWindow.on('page-title-updated', e => e.preventDefault());
 
   // Garbage collection handle
   connectionWindow.on('close', () => {
