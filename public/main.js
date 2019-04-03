@@ -1,6 +1,7 @@
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
+const isDev = require('electron-is-dev');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -11,6 +12,7 @@ app.on('ready', () => {
   // Create main window
   mainWindow = new BrowserWindow(
     {
+      title: 'IMAC TCP Client',
       webPreferences: {
         nodeIntegration: true
       }
@@ -18,9 +20,9 @@ app.on('ready', () => {
   );
 
   // Load html into window
-  mainWindow.loadURL(process.env.NODE_ENV === 'production' ?
-    `file://${path.join(__dirname, '../build/index.html')}`:
-    'http://localhost:3000'
+  mainWindow.loadURL(isDev ?
+    'http://localhost:3000?main' :
+    `file://${path.join(__dirname, '../build/index.html?main')}`
   );
 
   // Quit app when closed
@@ -42,7 +44,7 @@ const handleConnectionWindowOpen = () => {
     {
       parent: mainWindow,
       modal: true,
-      resizable: false,
+      resizable: true,
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
@@ -56,12 +58,12 @@ const handleConnectionWindowOpen = () => {
   );
 
   // remove menu
-  connectionWindow.setMenu(null);
+  // connectionWindow.setMenu(null);
 
   // Load html into window
-  connectionWindow.loadURL(process.env.NODE_ENV === 'production' ?
-    `file://${path.join(__dirname, '../build/index.html/#connectionWindow')}`:
-    'http://localhost:3000/#connectionWindow'
+  connectionWindow.loadURL(isDev ?
+    'http://localhost:3000?connectionWindow' :
+    `file://${path.join(__dirname, '../build/index.html?connectionWindow')}`
   );
 
   // Prevent title from changing
@@ -106,7 +108,7 @@ if(process.platform == 'darwin') {
 }
 
 // Add developer tools
-if(process.env.NODE_ENV !== 'production') {
+if(isDev) {
   mainMenuTemplate.push(
     {
       label: 'Developer Tools',
