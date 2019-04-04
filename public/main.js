@@ -1,5 +1,4 @@
 const electron = require('electron');
-const url = require('url');
 const path = require('path');
 const isDev = require('electron-is-dev');
 
@@ -9,6 +8,23 @@ let mainWindow;
 let connectionWindow;
 
 app.on('ready', () => {
+  // Initialize redux store
+  const store = require('../src/store/store')(ipcMain);
+
+  ipcMain.on('window::req', (e, info) => {
+    const {action, windowId} = info;
+    switch(action.type) {
+      case 'HANDLE_INITIAL_STATE_GET': {
+        const initState = store.getState();
+        e.sender.send(`${windowId}::res`, initState);
+        break;
+      }
+      default:
+        console.log('main default')
+        e.sender.send(`${windowId}::res`, {actionError: 'Action unregistered'});
+    }
+  })
+
   // Create main window
   mainWindow = new BrowserWindow(
     {

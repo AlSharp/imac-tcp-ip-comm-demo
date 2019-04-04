@@ -1,14 +1,12 @@
-export default (state = {
-  connected: false
+export default (state={
+  stateReceived: false
 }, action) => {
-  
   switch(action.type) {
-    case 'HANDLE_CONNECTION': {
-      const { arg1, arg2 } = action.payload;
+    case 'HANDLE_INITIAL_STATE_GET': {
       return {
         ...state,
-        arg1,
-        arg2
+        stateReceived: true,
+        ...action.payload
       }
     }
 

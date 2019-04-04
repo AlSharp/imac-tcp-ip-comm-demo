@@ -1,17 +1,16 @@
 import {createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
-import electronMiddleware from '../middlewares/electron-middleware';
+import electronMiddleware from '../middlewares/electron-renderer-middleware';
 import reducer from './reducer';
 const isDev = window.require('electron-is-dev');
 
+const windowId = 'connectionWindow';
+
 const store = ipcRenderer => {
-  let middlewares = [thunk, electronMiddleware(ipcRenderer)];
+  let middlewares = [thunk, electronMiddleware(ipcRenderer, windowId)];
   if (isDev) {
-    import('redux-logger')
-      .then(module => {
-        const logger = module.createLogger();
-        middlewares = [...middlewares, logger];
-      })
+    const logger = require('redux-logger').createLogger();
+    middlewares = [...middlewares, logger];
   }
   return createStore(reducer, applyMiddleware(...middlewares));
 }
