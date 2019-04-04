@@ -48,8 +48,8 @@ const handleConnectionWindowOpen = () => {
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
-      width: 300,
-      height: 200,
+      width: 245,
+      height: 161,
       title: 'Establish TCP connection',
       webPreferences: {
         nodeIntegration: true
