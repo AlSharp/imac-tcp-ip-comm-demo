@@ -67,24 +67,31 @@ class Window extends Component {
     this.props.handleInitialStateGet();
   }
 
+  handleSubmit(e) {
+    e.preventDefault();
+    const port = document.getElementById('port').value;
+    const ip = document.getElementById('ip').value;
+    this.props.handleConnectButtonClick({port, ip});
+  }
+
   render() {
-    const {
-      handleConnectButtonClick
-    } = this.props;
+    // const {
+      
+    // } = this.props;
     return (
       this.props.stateReceived ?
       <Div>
-        <Form>
+        <Form onSubmit={this.handleSubmit.bind(this)}>
           <Field>
             <Label htmlFor="port">Port</Label>
             <Input type="text" id="port" placeholder="8888" />
           </Field>
           <Field>
             <Label htmlFor="ip">IP address</Label>
-            <Input type="text" id="port" placeholder="192.168.0.254" />
+            <Input type="text" id="ip" placeholder="192.168.0.254" />
           </Field>
           <ButtonDiv>
-            <Button onClick={handleConnectButtonClick}>Connect</Button>
+            <Button type="submit">Connect</Button>
             <Button>Close</Button>
           </ButtonDiv>
           <StatusBar>
@@ -102,7 +109,7 @@ class Window extends Component {
 
 const mapStateToProps = state => {
   return {
-    stateReceived: state.stateReceived
+    stateReceived: state.local.stateReceived
   }
 }
 

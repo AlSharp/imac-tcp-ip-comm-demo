@@ -6,12 +6,11 @@ export const handleInitialStateGet = () => dispatch => {
   )
 }
 
-export const handleConnectButtonClick = e => dispatch => {
-  e.preventDefault();
+export const handleConnectButtonClick = props => dispatch => {
   dispatch(
     {
       type: 'HANDLE_CONNECT_BUTTON_CLICK',
-      payload: 'ddd'
+      payload: props
     }
   )
 }
