@@ -92,7 +92,7 @@ class Window extends Component {
           </Field>
           <ButtonDiv>
             <Button type="submit">Connect</Button>
-            <Button>Close</Button>
+            <Button type="button">Close</Button>
           </ButtonDiv>
           <StatusBar>
             <Status>

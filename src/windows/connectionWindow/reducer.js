@@ -1,6 +1,6 @@
 import {combineReducers} from 'redux';
 
-const local = (state ={
+const local = (state = {
   stateReceived: false
 }, action) => {
 

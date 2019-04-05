@@ -31,7 +31,7 @@ class Window extends Component {
 
 const mapStateToProps = state => {
   return {
-    stateReceived: state.stateReceived
+    stateReceived: state.local.stateReceived
   }
 }
 

@@ -1,7 +1,8 @@
 export const handleInitialStateGet = () => dispatch => {
   dispatch(
     {
-      type: 'HANDLE_INITIAL_STATE_GET'
+      type: 'HANDLE_INITIAL_STATE_GET',
+      beingDispatchedFurther: false
     }
   )
 }
@@ -9,8 +10,9 @@ export const handleInitialStateGet = () => dispatch => {
 export const handleConnectButtonClick = props => dispatch => {
   dispatch(
     {
-      type: 'HANDLE_CONNECT_BUTTON_CLICK',
-      payload: props
+      type: 'HANDLE_CONNECTION_CREATE',
+      payload: props,
+      beingDispatchedFurther: true
     }
   )
 }

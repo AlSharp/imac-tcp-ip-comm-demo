@@ -1,15 +1,18 @@
 const electron = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
+const net = require('net');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
 let connectionWindow;
 
+let socket = new net.Socket();
+
 app.on('ready', () => {
   // Initialize redux store
-  const store = require('../src/store/store')(ipcMain);
+  const store = require('./store/store')(socket, ipcMain);
 
   // Create main window
   mainWindow = new BrowserWindow(
