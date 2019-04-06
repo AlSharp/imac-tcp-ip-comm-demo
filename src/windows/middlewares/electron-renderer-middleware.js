@@ -17,19 +17,29 @@ const electronMiddleware = (ipcRenderer, windowId) => store => next => action =>
     next(action);
   } else {
     if (action.beingDispatchedFurther) {
+      // unref
       ipcRenderer.send('window::req', action);
       next(action);
     } else {
-      action.windowId = windowId;
-      asyncAction(ipcRenderer, action)
-        .then(data => {
-          action.payload = data;
+      switch(action.type) {
+        case 'HANDLE_INITIAL_STATE_GET': {
+          action.windowId = windowId;
+          action.payload = Object.keys(store.getState().shared);
+          asyncAction(ipcRenderer, action)
+            .then(data => {
+              action.payload = data;
+              next(action);
+            })
+            .catch(error => {
+              action.error = error;
+              next(action);
+            })
+          break;
+        }
+
+        default:
           next(action);
-        })
-        .catch(error => {
-          action.error = error;
-          next(action);
-        })
+      }
     }
   }
 }

@@ -76,6 +76,8 @@ const handleConnectionWindowOpen = () => {
 
   // Garbage collection handle
   connectionWindow.on('close', () => {
+    store.unregisterWindow('connectionWindow');
+    console.log('WINDOWS: ', store.windows);
     connectionWindow = null;
   })
 }
