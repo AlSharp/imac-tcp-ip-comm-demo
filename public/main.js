@@ -10,9 +10,13 @@ let connectionWindow;
 
 let socket = new net.Socket();
 
+let windows = [];
+
+// Initialize redux store
+// store has registerWindow() and unregisterWindow() methods.
+const store = require('./store/store')(socket, ipcMain, windows);
+
 app.on('ready', () => {
-  // Initialize redux store
-  const store = require('./store/store')(socket, ipcMain);
 
   // Create main window
   mainWindow = new BrowserWindow(
@@ -20,7 +24,8 @@ app.on('ready', () => {
       title: 'IMAC TCP Client',
       webPreferences: {
         nodeIntegration: true
-      }
+      },
+      name: 'mainWindow'
     }
   );
 
@@ -30,11 +35,25 @@ app.on('ready', () => {
     `file://${path.join(__dirname, '../build/index.html?main')}`
   );
 
-  // Quit app when closed
-  mainWindow.on('closed', () => app.quit());
+  mainWindow.on('show', () => {
+    console.log('MAIN WINDOW SHOW');
+    windows = windows.concat(
+      {
+        id: mainWindow.id,
+        name: mainWindow.webContents.browserWindowOptions.name,
+        webContents: mainWindow.webContents
+      }
+    )
+    console.log('WINDOWS ON SHOW: ', windows);
+  })
+
+  mainWindow.show();
 
   // Prevent title from changing
   mainWindow.on('page-title-updated', e => e.preventDefault());
+
+  // Quit app when closed
+  mainWindow.on('closed', () => app.quit());
 
   // Build menu from template
   const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
@@ -58,7 +77,8 @@ const handleConnectionWindowOpen = () => {
       title: 'Establish TCP connection',
       webPreferences: {
         nodeIntegration: true
-      }
+      },
+      name: 'connectionWindow'
     }
   );
 
@@ -71,22 +91,26 @@ const handleConnectionWindowOpen = () => {
     `file://${path.join(__dirname, '../build/index.html?connectionWindow')}`
   );
 
+  connectionWindow.on('show', () => {
+    console.log('CONNECTION WINDOW SHOW');
+    windows = windows.concat(
+      {
+        id: connectionWindow.id,
+        name: connectionWindow.webContents.browserWindowOptions.name,
+        webContents: connectionWindow.webContents
+      }
+    )
+  })
+
   // Prevent title from changing
   connectionWindow.on('page-title-updated', e => e.preventDefault());
 
   // Garbage collection handle
   connectionWindow.on('close', () => {
     store.unregisterWindow('connectionWindow');
-    console.log('WINDOWS: ', store.windows);
     connectionWindow = null;
   })
 }
-
-// Catch connection:port:ip
-ipcMain.on('connection:port:ip', (e, host) => {
-  console.log(e);
-  console.log(host);
-})
 
 // Create menu template
 const mainMenuTemplate = [

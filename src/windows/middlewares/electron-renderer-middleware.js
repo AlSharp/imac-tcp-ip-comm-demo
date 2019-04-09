@@ -1,7 +1,8 @@
 const asyncAction = (ipcRenderer, action) => {
   return new Promise((resolve, reject) => {
     ipcRenderer.send('window::req', action);
-    ipcRenderer.once(`${action.windowId}::res`, (e, res) => {
+    ipcRenderer.once(`${action.windowName}::res`, (e, res) => {
+      console.log('EVENT SENDER ID: ', e.senderId);
       console.log('res: ', res);
       if (res.actionError) {
         return reject(res);
@@ -11,7 +12,7 @@ const asyncAction = (ipcRenderer, action) => {
   })
 }
 
-const electronMiddleware = (ipcRenderer, windowId) => store => next => action => {
+const electronMiddleware = (ipcRenderer, windowName) => store => next => action => {
   if (action.local) {
     // only local state - store: {local: {}, shared: {}}
     next(action);
@@ -23,7 +24,7 @@ const electronMiddleware = (ipcRenderer, windowId) => store => next => action =>
     } else {
       switch(action.type) {
         case 'HANDLE_INITIAL_STATE_GET': {
-          action.windowId = windowId;
+          action.windowName = windowName;
           action.payload = Object.keys(store.getState().shared);
           asyncAction(ipcRenderer, action)
             .then(data => {

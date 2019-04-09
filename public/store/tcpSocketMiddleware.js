@@ -11,7 +11,7 @@ const handleConnectionCreate = (socket, action) => {
 
     const errorHandler = error => {
       clearTimeout(timer);
-      err = error;
+      err = error.code;
     }
 
     const closeHandler = hadError => {
@@ -21,7 +21,7 @@ const handleConnectionCreate = (socket, action) => {
         return;
       }
       if (closeByTimeout) {
-        reject('ETIMEDOUT');
+        reject({code: 'ETIMEDOUT'});
         return;
       }
     }
@@ -61,7 +61,7 @@ module.exports = socket => store => next => action => {
         })
         .catch(error => {
           action.type = 'HANDLE_CONNECTION_CREATE_REJECTED';
-          action.error = error;
+          action.error = error.code;
           next(action);
         })
     }

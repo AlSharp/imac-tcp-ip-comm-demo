@@ -19,6 +19,7 @@ const local = (state = {
 
 const shared = (state = {
   isConnected: false,
+  connectionError: '',
   port: '',
   ip: ''
 }, action) => {

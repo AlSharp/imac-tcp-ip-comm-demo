@@ -4,9 +4,11 @@ const tcpSocketMiddleware = require('./tcpSocketMiddleware');
 const electronReduxNotifier = require('./electronReduxNotifier');
 const reducer = require('./reducer');
 
+const {pick} = require('./utils');
+
 const isDev = require('electron-is-dev');
 
-module.exports = (socket, ipcMain) => {
+module.exports = (socket, ipcMain, windows) => {
   let middlewareEnhancer;
 
   if (isDev) {
@@ -26,24 +28,21 @@ module.exports = (socket, ipcMain) => {
   store = createStore(
     reducer,
     undefined,
-    compose(middlewareEnhancer, electronReduxNotifier(ipcMain))
+    compose(middlewareEnhancer, electronReduxNotifier(ipcMain, windows))
   )
 
-  store.windows = {};
-
-  store.registerWindow = (windowId, windowStateKeys) => {
-    store.windows = {...store.windows, [windowId]: windowStateKeys}
+  store.registerWindow = (windowName, windowStateKeys) => {
+    windows = windows.map(window =>
+      window.name === windowName ?
+      {...window, windowStateKeys} :
+      window
+    )
+    console.log('WINDOWS: ', windows);
   }
 
-  store.unregisterWindow = windowId => {
-    let {[windowId]: unreg, ...res} = store.windows;
-    store.windows = res;
-  }
-
-  const pick = (state, windowStateKeys) => {
-    return windowStateKeys
-              .map(key => key in state ? {[key]: state[key]} : {})
-              .reduce((res, o) => Object.assign(res, o), {});
+  store.unregisterWindow = windowName => {
+    windows = windows.filter(window => window.name !== windowName)
+    console.log('WINDOWS: ', windows);
   }
 
   ipcMain.on('window::req', (e, action) => {
@@ -52,10 +51,9 @@ module.exports = (socket, ipcMain) => {
     } else {
       switch(action.type) {
         case 'HANDLE_INITIAL_STATE_GET': {
-          store.registerWindow(action.windowId, action.payload);
-          console.log('WINDOWS: ', store.windows);
+          store.registerWindow(action.windowName, action.payload);
           const initState = pick(store.getState(), action.payload);
-          e.sender.send(`${action.windowId}::res`, initState);
+          e.sender.send(`${action.windowName}::res`, initState);
           break;
         }
         // send other actions through the redux of main process
