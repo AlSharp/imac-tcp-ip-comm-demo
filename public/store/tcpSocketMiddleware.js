@@ -1,27 +1,53 @@
+const {handleTCPConnectionError} = require('./actions')
+
 const handleConnectionCreate = (socket, action) => {
   return new Promise((resolve, reject) => {
     const {ip, port} = action.payload;
 
+    let timer, err;
+
+    const timeout = 1000;
+    let closeByTimeout = false;
+
     const errorHandler = error => {
-      reject(error);
-      return;
+      clearTimeout(timer);
+      err = error;
     }
 
-    const responseHandler = response => {
-      resolve(response);
+    const closeHandler = hadError => {
+      clearTimeout(timer);
+      if (hadError) {
+        reject(err);
+        return;
+      }
+      if (closeByTimeout) {
+        reject('ETIMEDOUT');
+        return;
+      }
+    }
+
+    const readyHandler = () => {
+      socket.removeListener('error', errorHandler);
+      socket.removeListener('close', closeHandler);
+      socket.prependOnceListener('error', handleTCPConnectionError);
+      resolve();
       return;
     }
 
     socket.connect(port, ip, () => {
-      console.log('connected');
+      clearTimeout(timer);
+    });
 
-      socket.on('error', errorHandler);
+    socket.once('error', errorHandler);
 
-      socket.write('t 2\r', 'ascii', () => {
-        'command t2 has been written over the LAN'
-      });
-      socket.once('data', responseHandler);
-    })
+    socket.once('close', closeHandler);
+
+    socket.once('ready', readyHandler);
+
+    timer = setTimeout(() => {
+      closeByTimeout = true;
+      socket.destroy();
+    }, timeout);
   })
 }
 
