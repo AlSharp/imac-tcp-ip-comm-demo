@@ -30,6 +30,7 @@ const handleConnectionCreate = (socket, action) => {
       socket.removeListener('error', errorHandler);
       socket.removeListener('close', closeHandler);
       socket.prependOnceListener('error', handleTCPConnectionError);
+      console.log('ERROR LISTENERS: ', socket.listeners('error'))
       resolve();
       return;
     }
@@ -51,6 +52,14 @@ const handleConnectionCreate = (socket, action) => {
   })
 }
 
+handleConnectionClose = (socket, action) => {
+
+  // remove handleTCPConnectionError listener, so we can add
+  // error event listener appropriate for connection closing routine
+  socket.removeListener('error', handleTCPConnectionError);
+  console.log('ERROR LISTENERS: ', socket.listeners('error'));
+}
+
 module.exports = socket => store => next => action => {
   switch(action.type) {
     case 'HANDLE_CONNECTION_CREATE': {
@@ -66,6 +75,13 @@ module.exports = socket => store => next => action => {
         })
       break;
     }
+    case 'HANDLE_CONNECTION_CLOSE': {
+      handleConnectionClose(socket, action);
+      next(action);
+      break;
+    }
+
+
     default:
       next(action);
   }

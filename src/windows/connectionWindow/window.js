@@ -5,7 +5,10 @@ import styled from 'styled-components';
 import {
   handleInitialStateGet,
   handleSharedStateUpdate,
-  handleConnectButtonClick
+  handleConnectButtonClick,
+  handleDisconnectButtonClick,
+  handleIPChange,
+  handlePortChange
 } from './actions';
 
 const Div = styled.div`
@@ -56,7 +59,7 @@ const LED = styled.div`
   left: 210px;
   top: 7px;
   display: inline-block;
-  background-color: green;
+  background-color: ${props => props.connected ? 'green' : 'red'};
   width: 10px;
   height: 10px;
   border-radius: 5px;
@@ -81,31 +84,75 @@ class Window extends Component {
     this.props.handleConnectButtonClick({port, ip});
   }
 
+  getErrorStatus = errorCode =>
+    errorCode === 'ETIMEDOUT' ? 'Timeout' :
+    errorCode === 'ECONNREFUSED' ? 'Refused by remote host' :
+    errorCode === 'ECONNABORTED' ? 'Was aborted' :
+    'Unexpected error'
+
   render() {
-    // const {
-      
-    // } = this.props;
+    const {
+      stateReceived,
+      isConnected,
+      connectionError,
+      port,
+      ip,
+      handleIPChange,
+      handlePortChange,
+      handleDisconnectButtonClick
+    } = this.props;
     return (
-      this.props.stateReceived ?
+      stateReceived ?
       <Div>
         <Form onSubmit={this.handleSubmit.bind(this)}>
           <Field>
             <Label htmlFor="port">Port</Label>
-            <Input type="text" id="port" placeholder="8888" />
+            <Input
+              type="text"
+              id="port"
+              placeholder="8888"
+              value={port}
+              onChange={handlePortChange}
+            />
           </Field>
           <Field>
             <Label htmlFor="ip">IP address</Label>
-            <Input type="text" id="ip" placeholder="192.168.0.254" />
+            <Input
+              type="text"
+              id="ip"
+              placeholder="192.168.0.254"
+              value={ip}
+              onChange={handleIPChange}
+            />
           </Field>
           <ButtonDiv>
-            <Button type="submit">Connect</Button>
-            <Button type="button">Close</Button>
+            {
+              !isConnected ?
+              <Button type="submit">Connect</Button> :
+              <Button
+                type="button"
+                onClick={handleDisconnectButtonClick}
+              >
+                Disconnect
+              </Button>
+            }
+            <Button
+              type="button"
+            >
+              Close
+            </Button>
           </ButtonDiv>
           <StatusBar>
             <Status>
-              Disconnected
+              {
+                isConnected ?
+                `Connected to ${ip}:${port}` :
+                connectionError.length > 0 ?
+                this.getErrorStatus(connectionError) :
+                'Disconnected'
+              }
             </Status>
-            <LED />
+            <LED connected={isConnected}/>
           </StatusBar>
         </Form>
       </Div> :
@@ -116,7 +163,11 @@ class Window extends Component {
 
 const mapStateToProps = state => {
   return {
-    stateReceived: state.local.stateReceived
+    stateReceived: state.local.stateReceived,
+    isConnected: state.shared.isConnected,
+    connectionError: state.shared.connectionError,
+    port: state.shared.port,
+    ip: state.shared.ip
   }
 }
 
@@ -125,6 +176,9 @@ export default connect(
   {
     handleInitialStateGet,
     handleSharedStateUpdate,
-    handleConnectButtonClick
+    handleConnectButtonClick,
+    handleDisconnectButtonClick,
+    handleIPChange,
+    handlePortChange
   }
 )(Window);

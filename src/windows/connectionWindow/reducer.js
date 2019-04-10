@@ -37,6 +37,18 @@ const shared = (state = {
         ...action.payload
       }
     }
+    case 'HANDLE_PORT_CHANGE': {
+      return {
+        ...state,
+        port: action.payload
+      }
+    }
+    case 'HANDLE_IP_CHANGE': {
+      return {
+        ...state,
+        ip: action.payload
+      }
+    }
 
     default:
       return state;

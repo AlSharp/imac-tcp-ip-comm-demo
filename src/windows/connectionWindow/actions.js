@@ -26,3 +26,33 @@ export const handleConnectButtonClick = props => dispatch => {
     }
   )
 }
+
+export const handleDisconnectButtonClick = () => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_CONNECTION_CLOSE',
+      beingDispatchedFurther: true
+
+    }
+  )
+}
+
+export const handleIPChange = event => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_IP_CHANGE',
+      payload: event.target.value,
+      local: true
+    }
+  )
+}
+
+export const handlePortChange = event => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_PORT_CHANGE',
+      payload: event.target.value,
+      local: true
+    }
+  )
+}
