@@ -8,7 +8,7 @@ const {pick} = require('./utils');
 
 const isDev = require('electron-is-dev');
 
-module.exports = (socket, ipcMain, windows) => {
+module.exports = (socket, ipcMain, windowStore) => {
   let middlewareEnhancer;
 
   if (isDev) {
@@ -28,30 +28,25 @@ module.exports = (socket, ipcMain, windows) => {
   store = createStore(
     reducer,
     undefined,
-    compose(middlewareEnhancer, electronReduxNotifier(ipcMain, windows))
+    compose(middlewareEnhancer, electronReduxNotifier(ipcMain, windowStore))
   )
 
-  store.registerWindow = (windowName, windowStateKeys) => {
-    windows = windows.map(window =>
-      window.name === windowName ?
-      {...window, windowStateKeys} :
-      window
-    )
-    console.log('WINDOWS: ', windows);
-  }
-
-  store.unregisterWindow = windowName => {
-    windows = windows.filter(window => window.name !== windowName)
-    console.log('WINDOWS: ', windows);
-  }
-
+  // sends each opened window its piece of redux store 
   ipcMain.on('window::req', (e, action) => {
     if (action.beingDispatchedFurther) {
       store.dispatch(action);
     } else {
       switch(action.type) {
         case 'HANDLE_INITIAL_STATE_GET': {
-          store.registerWindow(action.windowName, action.payload);
+          windowStore.dispatch(
+            {
+              type: 'WINDOW_KEYS_ADD',
+              payload: {
+                windowName: action.windowName,
+                windowStateKeys: action.payload
+              }
+            }
+          )
           const initState = pick(store.getState(), action.payload);
           e.sender.send(`${action.windowName}::res`, initState);
           break;

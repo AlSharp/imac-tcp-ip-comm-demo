@@ -8,13 +8,14 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 let mainWindow;
 let connectionWindow;
 
+// socket passed to redux middleware, but can be used here as well.
 let socket = new net.Socket();
 
-let windows = [];
+// stores windows
+const windowStore = require('./store/windowStore');
 
 // Initialize redux store
-// store has registerWindow() and unregisterWindow() methods.
-const store = require('./store/store')(socket, ipcMain, windows);
+const store = require('./store/store')(socket, ipcMain, windowStore);
 
 app.on('ready', () => {
 
@@ -36,17 +37,19 @@ app.on('ready', () => {
   );
 
   mainWindow.on('show', () => {
-    console.log('MAIN WINDOW SHOW');
-    windows = windows.concat(
+    windowStore.dispatch(
       {
-        id: mainWindow.id,
-        name: mainWindow.webContents.browserWindowOptions.name,
-        webContents: mainWindow.webContents
+        type: 'WINDOW_ADD',
+        payload: {
+          id: mainWindow.id,
+          name: mainWindow.webContents.browserWindowOptions.name,
+          webContents: mainWindow.webContents
+        }
       }
     )
-    console.log('WINDOWS ON SHOW: ', windows);
   })
 
+  // triggers show event
   mainWindow.show();
 
   // Prevent title from changing
@@ -92,22 +95,32 @@ const handleConnectionWindowOpen = () => {
   );
 
   connectionWindow.on('show', () => {
-    console.log('CONNECTION WINDOW SHOW');
-    windows = windows.concat(
+    windowStore.dispatch(
       {
-        id: connectionWindow.id,
-        name: connectionWindow.webContents.browserWindowOptions.name,
-        webContents: connectionWindow.webContents
+        type: 'WINDOW_ADD',
+        payload: {
+          id: connectionWindow.id,
+          name: connectionWindow.webContents.browserWindowOptions.name,
+          webContents: connectionWindow.webContents
+        }
       }
     )
-  })
+  });
+
+  // triggers show event
+  connectionWindow.show();
 
   // Prevent title from changing
   connectionWindow.on('page-title-updated', e => e.preventDefault());
 
   // Garbage collection handle
   connectionWindow.on('close', () => {
-    store.unregisterWindow('connectionWindow');
+    windowStore.dispatch(
+      {
+        type: 'WINDOW_REMOVE',
+        payload: 'connectionWindow'
+      }
+    )
     connectionWindow = null;
   })
 }

@@ -18,7 +18,8 @@ const electronMiddleware = (ipcRenderer, windowName) => store => next => action 
     next(action);
   } else {
     if (action.beingDispatchedFurther) {
-      // unref
+      // this action will be unlinked, reduxNotifier will notifies us of any changes.
+      // see window.js files. We listen to changes in componentDidMount() and dispatch action from there to update local redux store
       ipcRenderer.send('window::req', action);
       next(action);
     } else {
