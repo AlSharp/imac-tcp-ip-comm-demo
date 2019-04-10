@@ -3,7 +3,8 @@ import {connect} from 'react-redux';
 import styled from 'styled-components';
 
 import {
-  handleInitialStateGet
+  handleInitialStateGet,
+  handleSharedStateUpdate
 } from './actions';
 
 const Div = styled.div`
@@ -15,7 +16,13 @@ const Div = styled.div`
 class Window extends Component {
   
   componentDidMount() {
+    // get initial state on window open
     this.props.handleInitialStateGet();
+    
+    // get updated shared state
+    this.props.ipcRenderer.on('shared::update', (e, sharedState) => {
+      this.props.handleSharedStateUpdate(sharedState);
+    }) 
   }
 
   render() {
@@ -38,6 +45,7 @@ const mapStateToProps = state => {
 export default connect(
   mapStateToProps,
   {
-    handleInitialStateGet
+    handleInitialStateGet,
+    handleSharedStateUpdate
   }
 )(Window);

@@ -6,8 +6,7 @@ const reducer = (windows, action) => {
       return [...windows, {id, name, webContents}]
     }
     case 'WINDOW_REMOVE': {
-      const {windowName} = action.payload;
-      return windows.filter(window => window.name !== windowName)
+      return windows.filter(window => window.name !== action.payload)
     }
     case 'WINDOW_KEYS_ADD': {
       const {windowName, windowStateKeys} = action.payload;

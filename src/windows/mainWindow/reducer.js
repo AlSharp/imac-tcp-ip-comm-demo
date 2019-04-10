@@ -30,6 +30,12 @@ const shared = (state = {
         ...action.payload
       }
     }
+    case 'HANDLE_SHARED_STATE_UPDATE': {
+      return {
+        ...state,
+        ...action.payload
+      }
+    }
 
     default:
       return state;

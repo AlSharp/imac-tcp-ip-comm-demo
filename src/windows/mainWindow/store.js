@@ -4,7 +4,7 @@ import electronMiddleware from '../middlewares/electron-renderer-middleware';
 import reducer from './reducer';
 const isDev = window.require('electron-is-dev');
 
-const windowName = 'main';
+const windowName = 'mainWindow';
 
 const store = ipcRenderer => {
   let middlewares = [thunk, electronMiddleware(ipcRenderer, windowName)];

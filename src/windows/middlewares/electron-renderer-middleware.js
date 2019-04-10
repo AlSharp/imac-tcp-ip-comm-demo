@@ -14,7 +14,8 @@ const asyncAction = (ipcRenderer, action) => {
 
 const electronMiddleware = (ipcRenderer, windowName) => store => next => action => {
   if (action.local) {
-    // only local state - store: {local: {}, shared: {}}
+    // local action; can update local and shared parts
+    // store: {local: {}, shared: {}}
     next(action);
   } else {
     if (action.beingDispatchedFurther) {

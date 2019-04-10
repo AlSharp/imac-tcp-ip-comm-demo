@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 import {
   handleInitialStateGet,
+  handleSharedStateUpdate,
   handleConnectButtonClick
 } from './actions';
 
@@ -64,7 +65,13 @@ const LED = styled.div`
 class Window extends Component {
 
   componentDidMount() {
+    // get initial state on window open
     this.props.handleInitialStateGet();
+    
+    // get updated shared state
+    this.props.ipcRenderer.on('shared::update', (e, sharedState) => {
+      this.props.handleSharedStateUpdate(sharedState);
+    }) 
   }
 
   handleSubmit(e) {
@@ -117,6 +124,7 @@ export default connect(
   mapStateToProps,
   {
     handleInitialStateGet,
+    handleSharedStateUpdate,
     handleConnectButtonClick
   }
 )(Window);
