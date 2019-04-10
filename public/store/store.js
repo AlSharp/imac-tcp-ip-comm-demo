@@ -40,10 +40,11 @@ module.exports = (socket, ipcMain, windowStore) => {
         case 'HANDLE_INITIAL_STATE_GET': {
           windowStore.dispatch(
             {
-              type: 'WINDOW_KEYS_ADD',
+              type: 'WINDOW_KEYS_AND_WEBCONTENT_ADD',
               payload: {
                 windowName: action.windowName,
-                windowStateKeys: action.payload
+                windowStateKeys: action.payload,
+                webContents: e.sender
               }
             }
           )

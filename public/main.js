@@ -42,8 +42,7 @@ app.on('ready', () => {
         type: 'WINDOW_ADD',
         payload: {
           id: mainWindow.id,
-          name: mainWindow.webContents.browserWindowOptions.name,
-          webContents: mainWindow.webContents
+          name: mainWindow.webContents.browserWindowOptions.name
         }
       }
     )
@@ -100,8 +99,7 @@ const handleConnectionWindowOpen = () => {
         type: 'WINDOW_ADD',
         payload: {
           id: connectionWindow.id,
-          name: connectionWindow.webContents.browserWindowOptions.name,
-          webContents: connectionWindow.webContents
+          name: connectionWindow.webContents.browserWindowOptions.name
         }
       }
     )

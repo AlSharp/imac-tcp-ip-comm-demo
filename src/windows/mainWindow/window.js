@@ -22,7 +22,7 @@ class Window extends Component {
     // get updated shared state
     this.props.ipcRenderer.on('shared::update', (e, sharedState) => {
       this.props.handleSharedStateUpdate(sharedState);
-    }) 
+    })
   }
 
   render() {

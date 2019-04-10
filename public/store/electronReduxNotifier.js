@@ -9,7 +9,6 @@ module.exports = (ipcMain, windowStore) => createStore => (
   const processedReducer = (state, action) => {
     const newState = reducer(state, action);
     const windows = windowStore.getWindows();
-    console.log('WINDOWS: ', windows);
     for (let i = 0; i < windows.length; i++) {
       const windowSharedState = pick(newState, windows[i].windowStateKeys);
       windows[i].webContents.send('shared::update', windowSharedState);

@@ -64,7 +64,9 @@ module.exports = socket => store => next => action => {
           action.error = error.code;
           next(action);
         })
+      break;
     }
+    default:
+      next(action);
   }
-  next(action);
 }
