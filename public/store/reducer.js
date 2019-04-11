@@ -20,9 +20,22 @@ module.exports = (state = {
       return {
         ...state,
         isConnected: false,
-        connectionError: action.error,
+        connectionError: action.payload.error,
         port: action.payload.port,
         ip: action.payload.ip
+      }
+    }
+    case 'HANDLE_CONNECTION_CLOSE_SUCCEED': {
+      return {
+        ...state,
+        isConnected: false
+      }
+    }
+    case 'HANDLE_CONNECTION_CLOSE_REJECTED': {
+      return {
+        ...state,
+        isConnected: false,
+        connectionError: action.payload
       }
     }
 

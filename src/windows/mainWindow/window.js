@@ -8,9 +8,10 @@ import {
 } from './actions';
 
 const Div = styled.div`
-  width: 100%;
-  height: 100%;
-  margin-top: -21px;
+  width: 600px;
+  height: 500px;
+  box-sizing: border-box;
+  border: 1px solid;
 `;
 
 class Window extends Component {
@@ -29,7 +30,7 @@ class Window extends Component {
     return (
       this.props.stateReceived ?
       <Div>
-        <h1>IMAC TCP Client</h1>
+        
       </Div> :
       null
     )

@@ -28,6 +28,8 @@ const createStore = reducer => {
 
   const dispatch = action => {
     windows = reducer(windows, action);
+    let windowNames = windows.map(window => window.name);
+    console.log(windowNames);
   }
 
   return {getWindows, dispatch};

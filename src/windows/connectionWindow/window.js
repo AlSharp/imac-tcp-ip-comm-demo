@@ -90,6 +90,12 @@ class Window extends Component {
     errorCode === 'ECONNABORTED' ? 'Was aborted' :
     'Unexpected error'
 
+  handleCloseButtonClick() {
+    window.require('electron').remote
+      .getCurrentWindow()
+      .close();
+  }
+
   render() {
     const {
       stateReceived,
@@ -138,6 +144,7 @@ class Window extends Component {
             }
             <Button
               type="button"
+              onClick={this.handleCloseButtonClick.bind(this)}
             >
               Close
             </Button>

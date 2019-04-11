@@ -74,8 +74,8 @@ const handleConnectionWindowOpen = () => {
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
-      width: 245,
-      height: 161,
+      width: 242,
+      height: 163,
       title: 'Establish TCP connection',
       webPreferences: {
         nodeIntegration: true
@@ -85,7 +85,7 @@ const handleConnectionWindowOpen = () => {
   );
 
   // remove menu
-  // connectionWindow.setMenu(null);
+  connectionWindow.setMenu(null);
 
   // Load html into window
   connectionWindow.loadURL(isDev ?

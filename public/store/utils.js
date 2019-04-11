@@ -4,6 +4,11 @@ const pick = (state, windowStateKeys) => {
             .reduce((res, o) => Object.assign(res, o), {});
 }
 
+const showMeListeners = (socket, event) => {
+  console.log(`${event.toUpperCase()} LISTENERS: ${socket.listeners(event)}`)
+}
+
 module.exports = {
-  pick
+  pick,
+  showMeListeners
 }
