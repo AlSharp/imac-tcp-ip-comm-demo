@@ -21,7 +21,7 @@ const Form = styled.form`
 `;
 
 const Field = styled.div`
-  font-size: 14px;
+  font-size: 12px;
   padding: 6px 6px;
 `;
 
@@ -45,7 +45,7 @@ const Button = styled.button`
 
 const StatusBar = styled.div`
   position: relative;
-  background-color: #F5F5F5;
+  background-color: #F0F0F0;
   line-height: 21px;
 `;
 

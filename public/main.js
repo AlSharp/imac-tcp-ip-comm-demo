@@ -23,6 +23,7 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow(
     {
       title: 'IMAC TCP Client',
+      backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true
       },
@@ -70,12 +71,13 @@ const handleConnectionWindowOpen = () => {
     {
       parent: mainWindow,
       modal: true,
-      resizable: true,
+      resizable: false,
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
-      width: 242,
-      height: 163,
+      width: 232,
+      height: 154,
+      backgroundColor: '#F0F0F0',
       title: 'Establish TCP connection',
       webPreferences: {
         nodeIntegration: true

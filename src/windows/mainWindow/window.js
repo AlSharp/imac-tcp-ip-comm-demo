@@ -14,6 +14,79 @@ const Div = styled.div`
   border: 1px solid;
 `;
 
+const JogGroupBoxDiv = styled.div`
+  width: 400px;
+  height: 200px;
+  padding: 5px 10px;
+`
+
+const JogGroupBoxFieldSet = styled.fieldset`
+  width: 100%;
+  height: 100%;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #BFBFBF;
+  border-radius: 3px;
+`
+
+const JogGroupBoxLegend = styled.legend`
+  font-size: 12px;
+`
+
+const InputListDiv = styled.div`
+  display: inline-block;
+`
+
+const InputField = styled.div`
+  font-size: 12px;
+  padding: 3px;
+`
+
+const Label = styled.label`
+  display: inline-block;
+  width: 80px;
+`
+
+const Input = styled.input`
+  width: 100px;
+`
+
+
+const JogGroupBox = props =>
+  <JogGroupBoxDiv>
+    <JogGroupBoxFieldSet>
+      <JogGroupBoxLegend>
+        Jog
+      </JogGroupBoxLegend>
+      <InputListDiv>
+        <InputField>
+          <Label>Velocity</Label>
+          <Input
+            type="text"
+            id="velocity"
+            placeholder="counts/sec"
+          />
+        </InputField>
+        <InputField>
+          <Label>Acceleration</Label>
+          <Input
+            type="text"
+            id="acceleration"
+            placeholder="counts/sec2"
+          />
+        </InputField>
+        <InputField>
+          <Label>Deceleration</Label>
+          <Input
+            type="text"
+            id="deceleration"
+            placeholder="counts/sec2"
+          />
+        </InputField>
+      </InputListDiv>
+    </JogGroupBoxFieldSet>
+  </JogGroupBoxDiv>
+
 class Window extends Component {
   
   componentDidMount() {
@@ -30,7 +103,7 @@ class Window extends Component {
     return (
       this.props.stateReceived ?
       <Div>
-        
+        <JogGroupBox />
       </Div> :
       null
     )
