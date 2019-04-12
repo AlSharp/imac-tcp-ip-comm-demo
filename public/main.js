@@ -23,6 +23,8 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow(
     {
       title: 'IMAC TCP Client',
+      width: 474,
+      height: 333,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true

@@ -8,33 +8,36 @@ import {
 } from './actions';
 
 const Div = styled.div`
-  width: 600px;
-  height: 500px;
-  box-sizing: border-box;
-  border: 1px solid;
+  width: 458px;
+  height: 274px;
+  /* box-sizing: border-box;
+  border: 1px solid; */
 `;
 
-const JogGroupBoxDiv = styled.div`
-  width: 400px;
-  height: 200px;
-  padding: 5px 10px;
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
 `
 
-const JogGroupBoxFieldSet = styled.fieldset`
-  width: 100%;
-  height: 100%;
+const GroupBoxDiv = styled.div`
+  padding: 5px 15px;
+`
+
+const FieldSet = styled.fieldset`
+  width: 400px;
+  margin: 0;
   border-style: solid;
   border-width: 1px;
   border-color: #BFBFBF;
   border-radius: 3px;
 `
 
-const JogGroupBoxLegend = styled.legend`
+const Legend = styled.legend`
   font-size: 12px;
 `
 
 const InputListDiv = styled.div`
-  display: inline-block;
+  
 `
 
 const InputField = styled.div`
@@ -44,48 +47,136 @@ const InputField = styled.div`
 
 const Label = styled.label`
   display: inline-block;
-  width: 80px;
+  width: ${props => props.width};
 `
 
 const Input = styled.input`
-  width: 100px;
+  width: ${props => props.width};
 `
+
+const ButtonDiv = styled.div`
+  width: 200px;
+  text-align: center;
+  line-height: 81px;
+`;
+
+const Button = styled.button`
+  margin: 0 10px;
+`;
+
+const StatusBar = styled.div`
+  position: relative;
+  background-color: #F0F0F0;
+  padding: 0 15px 3px;
+  line-height: 21px;
+`;
+
+const Status = styled.span`
+  font-size: 12px;
+  margin-left: 6px;
+`;
+
+const LED = styled.div`
+  position: absolute;
+  left: 425px;
+  top: 7px;
+  display: inline-block;
+  background-color: ${props => props.connected ? 'green' : 'red'};
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+`;
+
+
+
+
 
 
 const JogGroupBox = props =>
-  <JogGroupBoxDiv>
-    <JogGroupBoxFieldSet>
-      <JogGroupBoxLegend>
+  <GroupBoxDiv>
+    <FieldSet>
+      <Legend>
         Jog
-      </JogGroupBoxLegend>
+      </Legend>
+      <Row>
+        <InputListDiv>
+          <InputField>
+            <Label width="80px">Velocity</Label>
+            <Input
+              type="text"
+              id="velocity"
+              placeholder="counts/sec"
+              width="100px"
+            />
+          </InputField>
+          <InputField>
+            <Label width="80px">Acceleration</Label>
+            <Input
+              type="text"
+              id="acceleration"
+              placeholder="counts/sec2"
+              width="100px"
+            />
+          </InputField>
+          <InputField>
+            <Label width="80px">Deceleration</Label>
+            <Input
+              type="text"
+              id="deceleration"
+              placeholder="counts/sec2"
+              width="100px"
+            />
+          </InputField>
+        </InputListDiv>
+        <ButtonDiv>
+          <Button>
+            Positive
+          </Button>
+          <Button>
+            Negative
+          </Button>
+        </ButtonDiv>
+      </Row>
+      <Row>
+        <InputField>
+          <Label width="150px">
+            <Input
+              type="checkbox"
+            />Activate Jog
+          </Label>
+        </InputField>
+      </Row>
+    </FieldSet>
+  </GroupBoxDiv>
+
+
+const ASCIICommandGroupBox = props =>
+  <GroupBoxDiv>
+    <FieldSet>
+      <Legend>
+        ASCII Command Interface
+      </Legend>
       <InputListDiv>
         <InputField>
-          <Label>Velocity</Label>
+          <Label width="80px">Command</Label>
           <Input
             type="text"
-            id="velocity"
-            placeholder="counts/sec"
+            id="ascii-command"
+            width="300px"
           />
         </InputField>
         <InputField>
-          <Label>Acceleration</Label>
+          <Label width="80px">Response</Label>
           <Input
             type="text"
-            id="acceleration"
-            placeholder="counts/sec2"
-          />
-        </InputField>
-        <InputField>
-          <Label>Deceleration</Label>
-          <Input
-            type="text"
-            id="deceleration"
-            placeholder="counts/sec2"
+            id="response"
+            width="300px"
+            readOnly
           />
         </InputField>
       </InputListDiv>
-    </JogGroupBoxFieldSet>
-  </JogGroupBoxDiv>
+    </FieldSet>
+  </GroupBoxDiv>
 
 class Window extends Component {
   
@@ -100,10 +191,28 @@ class Window extends Component {
   }
 
   render() {
+    const {
+      stateReceived,
+      isConnected,
+      port,
+      ip
+    } = this.props;
     return (
-      this.props.stateReceived ?
+      stateReceived ?
       <Div>
         <JogGroupBox />
+        <ASCIICommandGroupBox />
+        <StatusBar>
+          <Status>
+            <span>Status: </span>
+            {
+              isConnected ?
+              `Connected to ${ip}:${port}` :
+              'Disconnected'
+            }
+          </Status>
+          <LED connected={isConnected}/>
+        </StatusBar>
       </Div> :
       null
     )
@@ -112,7 +221,10 @@ class Window extends Component {
 
 const mapStateToProps = state => {
   return {
-    stateReceived: state.local.stateReceived
+    stateReceived: state.local.stateReceived,
+    isConnected: state.shared.isConnected,
+    ip: state.shared.ip,
+    port: state.shared.port
   }
 }
 
