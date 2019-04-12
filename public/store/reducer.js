@@ -3,6 +3,8 @@ module.exports = (state = {
   connectionError: '',
   port: '',
   ip: '',
+  isMotorEnabled: false,
+  isJogActivated: false
 }, action) => {
 
   switch(action.type) {
@@ -38,7 +40,22 @@ module.exports = (state = {
         connectionError: action.payload
       }
     }
-
+    case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
+      return {
+        ...state,
+        isMotorEnabled: action.payload,
+        isJogActivated: state.isJogActivated && action.payload
+      }
+    }
+    case 'HANDLE_MOTOR_ENABLE_REJECTED': {
+      return state;
+    }
+    case 'HANDLE_JOG_ACTIVATE': {
+      return {
+        ...state,
+        isJogActivated: action.payload
+      }
+    }
     default:
       return state;
   }

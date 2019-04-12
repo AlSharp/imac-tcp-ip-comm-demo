@@ -4,12 +4,15 @@ import styled from 'styled-components';
 
 import {
   handleInitialStateGet,
-  handleSharedStateUpdate
+  handleSharedStateUpdate,
+  handleMotorEnable,
+  handleJogActivate,
+  handleASCIICommandChange,
+  handleASCIICommandSubmit
 } from './actions';
 
 const Div = styled.div`
   width: 458px;
-  height: 274px;
   /* box-sizing: border-box;
   border: 1px solid; */
 `;
@@ -17,11 +20,20 @@ const Div = styled.div`
 const Row = styled.div`
   display: flex;
   justify-content: space-between;
+  height: ${props => props.height};
 `
 
 const EnableDiv = styled.div`
   padding: 5px 15px;
 `
+
+const ActivateJogDiv =styled.div`
+  display: inline-block;
+  position: absolute;
+  top: 140px;
+  left: 28px;
+  width: 150px;
+`;
 
 const GroupBoxDiv = styled.div`
   padding: 5px 15px;
@@ -34,6 +46,7 @@ const FieldSet = styled.fieldset`
   border-width: 1px;
   border-color: #BFBFBF;
   border-radius: 3px;
+  disabled: ${props => props.disabled}
 `
 
 const Legend = styled.legend`
@@ -67,12 +80,13 @@ const CheckboxInput = styled.input`
 `
 
 const ButtonDiv = styled.div`
-  width: 200px;
+  // width: 200px;
   text-align: center;
-  line-height: 81px;
+  line-height: ${props => props.lineHeight}
 `;
 
 const Button = styled.button`
+  width: ${props => props.width}
   margin: 0 10px;
 `;
 
@@ -100,13 +114,9 @@ const LED = styled.div`
 `;
 
 
-
-
-
-
 const JogGroupBox = props =>
   <GroupBoxDiv>
-    <FieldSet>
+    <FieldSet disabled={props.disabled}>
       <Legend>
         Jog
       </Legend>
@@ -140,24 +150,46 @@ const JogGroupBox = props =>
             />
           </InputField>
         </InputListDiv>
-        <ButtonDiv>
-          <Button>
+        <ButtonDiv lineHeight="81px">
+          <Button width="70px">
             Positive
           </Button>
-          <Button>
+          <Button width="70px">
             Negative
           </Button>
         </ButtonDiv>
       </Row>
+      {/* Make a room for Activate check box */}
+      <Row height="22px" /> 
+    </FieldSet>
+  </GroupBoxDiv>
+
+const MoveGroupBox = props =>
+  <GroupBoxDiv>
+    <FieldSet disabled={props.disabled}>
+      <Legend>
+        Move
+      </Legend>
       <Row>
-        <InputField>
-          <Label width="150px">
-            <CheckboxInput
-              type="checkbox"
-              marginLeft="0"
-            />Activate Jog
-          </Label>
-        </InputField>
+        <InputListDiv>
+          <InputField>
+            <Label width="80px">Distance</Label>
+            <TextInput
+              type="text"
+              id="distance"
+              placeholder="counts"
+              width="100px"
+            />
+          </InputField>
+        </InputListDiv>
+        <ButtonDiv>
+          <Button width="70px">
+            Move
+          </Button>
+          <Button width="70px">
+            Abort
+          </Button>
+        </ButtonDiv>
       </Row>
     </FieldSet>
   </GroupBoxDiv>
@@ -165,7 +197,7 @@ const JogGroupBox = props =>
 
 const ASCIICommandGroupBox = props =>
   <GroupBoxDiv>
-    <FieldSet>
+    <FieldSet disabled={props.disabled}>
       <Legend>
         ASCII Command Interface
       </Legend>
@@ -176,6 +208,9 @@ const ASCIICommandGroupBox = props =>
             type="text"
             id="ascii-command"
             width="300px"
+            value={props.ASCIICommand}
+            onChange={props.handleASCIICommandChange}
+            onKeyDown={props.handleASCIICommandSubmit}
           />
         </InputField>
         <InputField>
@@ -208,23 +243,64 @@ class Window extends Component {
       stateReceived,
       isConnected,
       port,
-      ip
+      ip,
+      isMotorEnabled,
+      isJogActivated,
+      ASCIICommand,
+      handleMotorEnable,
+      handleJogActivate,
+      handleASCIICommandChange,
+      handleASCIICommandSubmit
     } = this.props;
     return (
       stateReceived ?
       <Div>
         <EnableDiv>
           <InputField>
-          <Label width="150px">
+          <Label
+            width="150px"
+            onClick={e => e.preventDefault()}
+          >
             <CheckboxInput
               type="checkbox"
+              id="enable"
               marginLeft="10px"
-            />Enable
+              disabled={!isConnected}
+              checked={isMotorEnabled}
+              onChange={handleMotorEnable}
+            />Enable motor
           </Label>
           </InputField>
         </EnableDiv>
-        <JogGroupBox />
-        <ASCIICommandGroupBox />
+        <ActivateJogDiv>
+          <InputField>
+            <Label
+              width="150px"
+              onClick={e => e.preventDefault()}
+            >
+              <CheckboxInput
+                type="checkbox"
+                id="activate-jog"
+                marginLeft="0"
+                disabled={!isConnected || !isMotorEnabled}
+                checked={isJogActivated}
+                onChange={handleJogActivate}
+              />Activate Jog
+            </Label>
+          </InputField>
+        </ActivateJogDiv>
+        <JogGroupBox
+          disabled={!isConnected || !isMotorEnabled || !isJogActivated}
+        />
+        <MoveGroupBox
+          disabled={!isConnected || !isMotorEnabled}
+        />
+        <ASCIICommandGroupBox
+          disabled={!isConnected}
+          ASCIICommand={ASCIICommand}
+          handleASCIICommandChange={handleASCIICommandChange}
+          handleASCIICommandSubmit={handleASCIICommandSubmit}
+        />
         <StatusBar>
           <Status>
             <span>Status: </span>
@@ -247,7 +323,10 @@ const mapStateToProps = state => {
     stateReceived: state.local.stateReceived,
     isConnected: state.shared.isConnected,
     ip: state.shared.ip,
-    port: state.shared.port
+    port: state.shared.port,
+    isMotorEnabled: state.shared.isMotorEnabled,
+    isJogActivated: state.shared.isJogActivated,
+    ASCIICommand: state.local.ASCIICommand
   }
 }
 
@@ -255,6 +334,10 @@ export default connect(
   mapStateToProps,
   {
     handleInitialStateGet,
-    handleSharedStateUpdate
+    handleSharedStateUpdate,
+    handleMotorEnable,
+    handleJogActivate,
+    handleASCIICommandChange,
+    handleASCIICommandSubmit
   }
 )(Window);

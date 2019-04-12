@@ -24,7 +24,7 @@ app.on('ready', () => {
     {
       title: 'IMAC TCP Client',
       width: 474,
-      height: 333,
+      height: 360,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true
@@ -137,7 +137,12 @@ const mainMenuTemplate = [
         click: () => handleConnectionWindowOpen()
       },
       {
-        label: 'Disconnect'
+        label: 'Disconnect',
+        click: () => store.dispatch(
+          {
+            type: 'HANDLE_CONNECTION_CLOSE'
+          }
+        )
       },
       {
         label: 'Quit',

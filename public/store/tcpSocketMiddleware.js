@@ -2,6 +2,32 @@ const {handleTCPConnectionError} = require('./actions')
 
 const {showMeListeners} = require('./utils');
 
+const write = (socket, command) => {
+  return new Promise((resolve, reject) => {
+    let timeout;
+    const responseHandler = response => {
+      clearTimeout(timeout);
+      if (response.slice(0, 1) === 'v') {
+        resolve(response.slice(2));
+        return;
+      } else if (response.slice(0, 1) === 'e') {
+        reject(response);
+        return;
+      } else {
+        resolve(response);
+        return;
+      }
+    }
+    timeout = setTimeout(() => {
+      socket.removeListener('data', responseHandler);
+      reject('WRITE TIMEOUT');
+      return;
+    }, 300);
+    socket.write(command + '\r', 'ascii');
+    socket.once('data', responseHandler);
+  })
+}
+
 const handleConnectionCreate = (socket, action) => {
   return new Promise((resolve, reject) => {
     const {ip, port} = action.payload;
@@ -91,6 +117,13 @@ handleConnectionClose = (socket, action) => {
   })
 }
 
+const handleMotorEnable = (socket, action) => {
+  let command = action.payload ?
+    's r0x70 2 0\r' :
+    's r0x70 258 0\r';
+  return write(socket, command);
+}
+
 module.exports = socket => store => next => action => {
   switch(action.type) {
     case 'HANDLE_CONNECTION_CREATE': {
@@ -125,6 +158,22 @@ module.exports = socket => store => next => action => {
           showMeListeners(socket, 'close');
           action.type = 'HANDLE_CONNECTION_CLOSE_REJECTED';
           action.payload = error.code;
+          next(action);
+        })
+      break;
+    }
+    case 'HANDLE_MOTOR_ENABLE': {
+      handleMotorEnable(socket, action)
+        .then(data => {
+          showMeListeners(socket, 'data');
+          action.type = 'HANDLE_MOTOR_ENABLE_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          showMeListeners(socket, 'data');
+          // Do I need to show dialog message box with an error?
+          // dialog.showErrorBox(title, content) 
+          action.type = 'HANDLE_MOTOR_ENABLE_REJECTED';
           next(action);
         })
       break;

@@ -1,7 +1,8 @@
 import {combineReducers} from 'redux';
 
 const local = (state = {
-  stateReceived: false
+  stateReceived: false,
+  ASCIICommand: ''
 }, action) => {
   
   switch(action.type) {
@@ -9,6 +10,12 @@ const local = (state = {
       return {
         ...state,
         stateReceived: true
+      }
+    }
+    case 'HANDLE_ASCII_COMMAND_CHANGE': {
+      return {
+        ...state,
+        ASCIICommand: action.payload
       }
     }
 
@@ -20,7 +27,9 @@ const local = (state = {
 const shared = (state = {
   isConnected: false,
   port: '',
-  ip: ''
+  ip: '',
+  isMotorEnabled: false,
+  isJogActivated: false,
 }, action) => {
 
   switch(action.type) {
