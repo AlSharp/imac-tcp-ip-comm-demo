@@ -73,7 +73,7 @@ const handleConnectionWindowOpen = () => {
     {
       parent: mainWindow,
       modal: true,
-      resizable: false,
+      resizable: true,
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
@@ -89,7 +89,7 @@ const handleConnectionWindowOpen = () => {
   );
 
   // remove menu
-  connectionWindow.setMenu(null);
+  // connectionWindow.setMenu(null);
 
   // Load html into window
   connectionWindow.loadURL(isDev ?

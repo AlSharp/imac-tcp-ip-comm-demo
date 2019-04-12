@@ -19,6 +19,10 @@ const Row = styled.div`
   justify-content: space-between;
 `
 
+const EnableDiv = styled.div`
+  padding: 5px 15px;
+`
+
 const GroupBoxDiv = styled.div`
   padding: 5px 15px;
 `
@@ -50,8 +54,16 @@ const Label = styled.label`
   width: ${props => props.width};
 `
 
-const Input = styled.input`
+const TextInput = styled.input`
   width: ${props => props.width};
+`
+
+const CheckboxInput = styled.input`
+  margin: 0 5px 0 10px;
+  vertical-align: bottom;
+  position: relative;
+  top: -1px;
+  margin-left: ${props => props.marginLeft}
 `
 
 const ButtonDiv = styled.div`
@@ -102,7 +114,7 @@ const JogGroupBox = props =>
         <InputListDiv>
           <InputField>
             <Label width="80px">Velocity</Label>
-            <Input
+            <TextInput
               type="text"
               id="velocity"
               placeholder="counts/sec"
@@ -111,7 +123,7 @@ const JogGroupBox = props =>
           </InputField>
           <InputField>
             <Label width="80px">Acceleration</Label>
-            <Input
+            <TextInput
               type="text"
               id="acceleration"
               placeholder="counts/sec2"
@@ -120,7 +132,7 @@ const JogGroupBox = props =>
           </InputField>
           <InputField>
             <Label width="80px">Deceleration</Label>
-            <Input
+            <TextInput
               type="text"
               id="deceleration"
               placeholder="counts/sec2"
@@ -140,8 +152,9 @@ const JogGroupBox = props =>
       <Row>
         <InputField>
           <Label width="150px">
-            <Input
+            <CheckboxInput
               type="checkbox"
+              marginLeft="0"
             />Activate Jog
           </Label>
         </InputField>
@@ -159,7 +172,7 @@ const ASCIICommandGroupBox = props =>
       <InputListDiv>
         <InputField>
           <Label width="80px">Command</Label>
-          <Input
+          <TextInput
             type="text"
             id="ascii-command"
             width="300px"
@@ -167,7 +180,7 @@ const ASCIICommandGroupBox = props =>
         </InputField>
         <InputField>
           <Label width="80px">Response</Label>
-          <Input
+          <TextInput
             type="text"
             id="response"
             width="300px"
@@ -200,6 +213,16 @@ class Window extends Component {
     return (
       stateReceived ?
       <Div>
+        <EnableDiv>
+          <InputField>
+          <Label width="150px">
+            <CheckboxInput
+              type="checkbox"
+              marginLeft="10px"
+            />Enable
+          </Label>
+          </InputField>
+        </EnableDiv>
         <JogGroupBox />
         <ASCIICommandGroupBox />
         <StatusBar>
