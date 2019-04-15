@@ -5,7 +5,9 @@ const {showMeListeners} = require('./utils');
 const write = (socket, command) => {
   return new Promise((resolve, reject) => {
     let timeout;
-    const responseHandler = response => {
+    const responseHandler = res => {
+      let response = res.toString('utf8');
+      console.log('RESPONSE: ', response);
       clearTimeout(timeout);
       if (response.slice(0, 1) === 'v') {
         resolve(response.slice(2));
@@ -118,9 +120,12 @@ handleConnectionClose = (socket, action) => {
 }
 
 const handleMotorEnable = (socket, action) => {
+  // let command = action.payload ?
+  //   's r0x70 2 0\r' :
+  //   's r0x70 258 0\r';
   let command = action.payload ?
-    's r0x70 2 0\r' :
-    's r0x70 258 0\r';
+    's r0x70 258 0\r' :
+    's r0x70 2 0\r';
   return write(socket, command);
 }
 

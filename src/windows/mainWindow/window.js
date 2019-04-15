@@ -46,7 +46,6 @@ const FieldSet = styled.fieldset`
   border-width: 1px;
   border-color: #BFBFBF;
   border-radius: 3px;
-  disabled: ${props => props.disabled}
 `
 
 const Legend = styled.legend`
@@ -76,17 +75,17 @@ const CheckboxInput = styled.input`
   vertical-align: bottom;
   position: relative;
   top: -1px;
-  margin-left: ${props => props.marginLeft}
+  margin-left: ${props => props.marginLeft};
 `
 
 const ButtonDiv = styled.div`
   // width: 200px;
   text-align: center;
-  line-height: ${props => props.lineHeight}
+  line-height: ${props => props.lineHeight};
 `;
 
 const Button = styled.button`
-  width: ${props => props.width}
+  width: ${props => props.width};
   margin: 0 10px;
 `;
 
