@@ -8,7 +8,11 @@ import {
   handleMotorEnable,
   handleJogActivate,
   handleASCIICommandChange,
-  handleASCIICommandSubmit
+  handleASCIICommandSubmit,
+  handleParameterValueChange,
+  handleMoveButtonClick,
+  handleMoveAbort,
+  handleJog
 } from './actions';
 
 const Div = styled.div`
@@ -68,6 +72,11 @@ const Label = styled.label`
 
 const TextInput = styled.input`
   width: ${props => props.width};
+  border-color: ${props => props.validationError && 
+    props.validationError !== 'Required' ?
+    'red' :
+    'initial'
+  }
 `
 
 const CheckboxInput = styled.input`
@@ -112,6 +121,21 @@ const LED = styled.div`
   border-radius: 5px;
 `;
 
+const required = value => value ? undefined : 'Required';
+
+const shouldBeInteger = value => {
+  const val = Math.floor(Number(value));
+  return val !== Infinity && String(val) === value ?
+    undefined : 'Should be integer';
+}
+
+const shouldBePositiveInteger = value => {
+  const val = Math.floor(Number(value));
+  return val !== Infinity && String(val) === value && val >= 0 ?
+    undefined : 'Should be positive integer';
+}
+
+
 
 const JogGroupBox = props =>
   <GroupBoxDiv>
@@ -128,6 +152,14 @@ const JogGroupBox = props =>
               id="velocity"
               placeholder="counts/sec"
               width="100px"
+              value={props.velocity}
+              validationError={props.velocityError}
+              onChange={e => props.handleParameterValueChange(
+                e,
+                'velocity',
+                [required, shouldBePositiveInteger]
+                )
+              }
             />
           </InputField>
           <InputField>
@@ -137,6 +169,14 @@ const JogGroupBox = props =>
               id="acceleration"
               placeholder="counts/sec2"
               width="100px"
+              value={props.acceleration}
+              validationError={props.accelerationError}
+              onChange={e => props.handleParameterValueChange(
+                e,
+                'acceleration',
+                [required, shouldBePositiveInteger]
+                )
+              }
             />
           </InputField>
           <InputField>
@@ -146,14 +186,30 @@ const JogGroupBox = props =>
               id="deceleration"
               placeholder="counts/sec2"
               width="100px"
+              value={props.deceleration}
+              validationError={props.decelerationError}
+              onChange={e => props.handleParameterValueChange(
+                e,
+                'deceleration',
+                [required, shouldBePositiveInteger]
+                )
+              }
             />
           </InputField>
         </InputListDiv>
         <ButtonDiv lineHeight="81px">
-          <Button width="70px">
+          <Button
+            width="70px"
+            onMouseDown={e => props.handleJog('positive')}
+            onMouseUp={props.handleMoveAbort}
+          >
             Positive
           </Button>
-          <Button width="70px">
+          <Button
+            width="70px"
+            onMouseDown={e => props.handleJog('negative')}
+            onMouseUp={props.handleMoveAbort}
+          >
             Negative
           </Button>
         </ButtonDiv>
@@ -178,14 +234,28 @@ const MoveGroupBox = props =>
               id="distance"
               placeholder="counts"
               width="100px"
+              value={props.distance}
+              validationError={props.distanceError}
+              onChange={e => props.handleParameterValueChange(
+                e,
+                'distance',
+                [required, shouldBeInteger]
+                )
+              }
             />
           </InputField>
         </InputListDiv>
         <ButtonDiv>
-          <Button width="70px">
+          <Button
+            width="70px"
+            onClick={props.handleMoveButtonClick}
+          >
             Move
           </Button>
-          <Button width="70px">
+          <Button
+            width="70px"
+            onClick={props.handleMoveAbort}
+          >
             Abort
           </Button>
         </ButtonDiv>
@@ -218,6 +288,7 @@ const ASCIICommandGroupBox = props =>
             type="text"
             id="response"
             width="300px"
+            value={props.motorResponse}
             readOnly
           />
         </InputField>
@@ -246,10 +317,23 @@ class Window extends Component {
       isMotorEnabled,
       isJogActivated,
       ASCIICommand,
+      motorResponse,
+      velocity,
+      velocityError,
+      acceleration,
+      accelerationError,
+      deceleration,
+      decelerationError,
+      distance,
+      distanceError,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
-      handleASCIICommandSubmit
+      handleASCIICommandSubmit,
+      handleParameterValueChange,
+      handleMoveButtonClick,
+      handleMoveAbort,
+      handleJog
     } = this.props;
     return (
       stateReceived ?
@@ -290,13 +374,28 @@ class Window extends Component {
         </ActivateJogDiv>
         <JogGroupBox
           disabled={!isConnected || !isMotorEnabled || !isJogActivated}
+          velocity={velocity}
+          velocityError={velocityError}
+          acceleration={acceleration}
+          accelerationError={accelerationError}
+          deceleration={deceleration}
+          decelerationError={decelerationError}
+          handleParameterValueChange={handleParameterValueChange}
+          handleJog={handleJog}
+          handleMoveAbort={handleMoveAbort}
         />
         <MoveGroupBox
-          disabled={!isConnected || !isMotorEnabled}
+          disabled={!isConnected || !isMotorEnabled || isJogActivated}
+          distance={distance}
+          distanceError={distanceError}
+          handleParameterValueChange={handleParameterValueChange}
+          handleMoveButtonClick={handleMoveButtonClick}
+          handleMoveAbort={handleMoveAbort}
         />
         <ASCIICommandGroupBox
-          disabled={!isConnected}
+          disabled={!isConnected || isJogActivated}
           ASCIICommand={ASCIICommand}
+          motorResponse={motorResponse}
           handleASCIICommandChange={handleASCIICommandChange}
           handleASCIICommandSubmit={handleASCIICommandSubmit}
         />
@@ -325,7 +424,16 @@ const mapStateToProps = state => {
     port: state.shared.port,
     isMotorEnabled: state.shared.isMotorEnabled,
     isJogActivated: state.shared.isJogActivated,
-    ASCIICommand: state.local.ASCIICommand
+    ASCIICommand: state.local.ASCIICommand,
+    motorResponse: state.shared.motorResponse,
+    velocity: state.local.velocity,
+    velocityError: state.local.velocityError,
+    acceleration: state.local.acceleration,
+    accelerationError: state.local.accelerationError,
+    deceleration: state.local.deceleration,
+    decelerationError: state.local.decelerationError,
+    distance: state.local.distance,
+    distanceError: state.local.distanceError
   }
 }
 
@@ -337,6 +445,10 @@ export default connect(
     handleMotorEnable,
     handleJogActivate,
     handleASCIICommandChange,
-    handleASCIICommandSubmit
+    handleASCIICommandSubmit,
+    handleParameterValueChange,
+    handleMoveButtonClick,
+    handleMoveAbort,
+    handleJog
   }
 )(Window);

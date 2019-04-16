@@ -23,8 +23,9 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow(
     {
       title: 'IMAC TCP Client',
-      width: 474,
-      height: 360,
+      resizable: false,
+      width: 464,
+      height: 419,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true
@@ -73,7 +74,7 @@ const handleConnectionWindowOpen = () => {
     {
       parent: mainWindow,
       modal: true,
-      resizable: true,
+      resizable: false,
       minimizable: false,
       maximizable: false,
       skipTaskbar: true,
@@ -89,7 +90,7 @@ const handleConnectionWindowOpen = () => {
   );
 
   // remove menu
-  // connectionWindow.setMenu(null);
+  connectionWindow.setMenu(null);
 
   // Load html into window
   connectionWindow.loadURL(isDev ?

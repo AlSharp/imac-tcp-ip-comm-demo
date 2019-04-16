@@ -2,10 +2,17 @@ const {handleTCPConnectionError} = require('./actions')
 
 const {showMeListeners} = require('./utils');
 
-const write = (socket, command) => {
+const writeOne = (socket, command) => {
   return new Promise((resolve, reject) => {
     let timeout;
-    const responseHandler = res => {
+    let errorHandler, responseHandler;
+    errorHandler = error => {
+      socket.removeListener('data', responseHandler);
+      reject(error);
+      return;
+    }
+    responseHandler = res => {
+      socket.removeListener('error', errorHandler);
       let response = res.toString('utf8');
       console.log('RESPONSE: ', response);
       clearTimeout(timeout);
@@ -22,12 +29,22 @@ const write = (socket, command) => {
     }
     timeout = setTimeout(() => {
       socket.removeListener('data', responseHandler);
+      socket.removeListener('error', errorHandler);
       reject('WRITE TIMEOUT');
       return;
     }, 300);
     socket.write(command + '\r', 'ascii');
+    socket.once('error', errorHandler);
     socket.once('data', responseHandler);
   })
+}
+
+const write = async (socket, commands) => {
+  for (let i = 0; i < commands.length; i++) {
+    await writeOne(socket, commands[i]);
+    showMeListeners(socket, 'data');
+    showMeListeners(socket, 'error');
+  }
 }
 
 const handleConnectionCreate = (socket, action) => {
@@ -120,14 +137,43 @@ handleConnectionClose = (socket, action) => {
 }
 
 const handleMotorEnable = (socket, action) => {
-  // let command = action.payload ?
-  //   's r0x70 2 0\r' :
-  //   's r0x70 258 0\r';
   let command = action.payload ?
-    's r0x70 258 0\r' :
-    's r0x70 2 0\r';
-  return write(socket, command);
+    's r0x70 2 0' :
+    's r0x70 258 0';
+  // let command = action.payload ?
+  //   's r0x70 258 0\r' :
+  //   's r0x70 2 0\r';
+  return writeOne(socket, command);
 }
+
+const handleASCIICommandSend = (socket, action) =>
+  writeOne(socket, action.payload);
+
+const handleDistanceMoveExecute = (socket, action) => {
+  let commands = ['s r0xc8 256', `s r0xca ${action.payload}`, 't 1'];
+  return write(socket, commands);
+}
+
+const handleJog = (socket, action) => {
+  let commands;
+  if(action.payload) {
+    commands = [
+      's r0xc8 2',
+      `s r0xca ${action.direction === 'positive' ? '1' : '-1'}`,
+      `s r0xcb ${action.payload.velocity}`,
+      `s r0xcc ${action.payload.acceleration}`,
+      `s r0xcd ${action.payload.deceleration}`,
+      `s r0xcf ${action.payload.deceleration}`,
+      't 1'
+    ]
+  } else {
+    commands = ['t 1'];
+  }
+  return write(socket, commands);
+}
+
+const handleMoveAbort = (socket, action) =>
+  writeOne(socket, 't 0');
 
 module.exports = socket => store => next => action => {
   switch(action.type) {
@@ -169,7 +215,7 @@ module.exports = socket => store => next => action => {
     }
     case 'HANDLE_MOTOR_ENABLE': {
       handleMotorEnable(socket, action)
-        .then(data => {
+        .then(response => {
           showMeListeners(socket, 'data');
           action.type = 'HANDLE_MOTOR_ENABLE_SUCCEED';
           next(action);
@@ -181,6 +227,78 @@ module.exports = socket => store => next => action => {
           action.type = 'HANDLE_MOTOR_ENABLE_REJECTED';
           next(action);
         })
+      break;
+    }
+    case 'HANDLE_ASCII_COMMAND_SUBMIT': {
+      handleASCIICommandSend(socket, action)
+        .then(response => {
+          showMeListeners(socket, 'data');
+          action.type = 'HANDLE_ASCII_COMMAND_SUBMIT_SUCCEED';
+          action.payload = response;
+          next(action);
+        })
+        .catch(error => {
+          showMeListeners(socket, 'data');
+          action.type = 'HANDLE_ASCII_COMMAND_SUBMIT_REJECTED';
+          action.payload = error;
+          next(action);
+        })
+      break;
+    }
+    case 'HANDLE_DISTANCE_MOVE_EXECUTE': {
+      handleDistanceMoveExecute(socket, action)
+      .then(response => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
+        next(action);
+      })
+      .catch(error => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
+        next(action);
+      })
+      break;
+    }
+    case 'HANDLE_JOG': {
+      handleJog(socket, action)
+      .then(response => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_JOG_SUCCEED';
+        next(action);
+      })
+      .catch(error => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_JOG_REJECTED';
+        next(action);
+      })
+      break;
+    }
+    case 'HANDLE_MOVE_ABORT': {
+      handleMoveAbort(socket, action)
+      .then(response => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+        next(action);
+      })
+      .catch(error => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+        next(action);
+      })
+      break;
+    }
+    case 'HANDLE_JOG_ABORT': {
+      handleMoveAbort(socket, action)
+      .then(response => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_JOG_ABORT_SUCCEED';
+        next(action);
+      })
+      .catch(error => {
+        showMeListeners(socket, 'data');
+        action.type = 'HANDLE_JOG_ABORT_REJECTED';
+        next(action);
+      })
       break;
     }
 

@@ -2,7 +2,16 @@ import {combineReducers} from 'redux';
 
 const local = (state = {
   stateReceived: false,
-  ASCIICommand: ''
+  ASCIICommand: '',
+  velocity: '',
+  velocityError: undefined,
+  acceleration: '',
+  accelerationError: undefined,
+  deceleration: '',
+  decelerationError: undefined,
+  areJogParamsUpdated: false,
+  distance: '',
+  distanceError: undefined
 }, action) => {
   
   switch(action.type) {
@@ -12,12 +21,37 @@ const local = (state = {
         stateReceived: true
       }
     }
+    case 'HANDLE_MOTOR_ENABLE': {
+      return {
+        ...state,
+        areJogParamsUpdated: true
+      }
+    }
+    case 'HANDLE_JOG_ACTIVATE': {
+      return {
+        ...state,
+        areJogParamsUpdated: true
+      }
+    }
     case 'HANDLE_ASCII_COMMAND_CHANGE': {
       return {
         ...state,
         ASCIICommand: action.payload
       }
     }
+    case 'HANDLE_PARAMETER_VALUE_CHANGE': {
+      const {parameterName, validationError} = action;
+      return {
+        ...state,
+        [parameterName]: action.payload,
+        [`${parameterName}Error`]: validationError,
+        areJogParamsUpdated: parameterName !== 'distance' ? 
+          true :
+          state.areJogParamsUpdated,
+        
+      }
+    }
+    
 
     default:
       return state;
@@ -30,6 +64,8 @@ const shared = (state = {
   ip: '',
   isMotorEnabled: false,
   isJogActivated: false,
+  isJogging: false,
+  motorResponse: ''
 }, action) => {
 
   switch(action.type) {
