@@ -1,5 +1,6 @@
 const {createStore, applyMiddleware, compose} = require('redux');
 const thunk = require('redux-thunk').default;
+const cmdPortMiddleware = require('./cmdPortMiddleware');
 const tcpSocketMiddleware = require('./tcpSocketMiddleware');
 const electronReduxNotifier = require('./electronReduxNotifier');
 const reducer = require('./reducer');
@@ -15,6 +16,7 @@ module.exports = (socket, commandPort, ipcMain, windowStore) => {
     const logger = require('redux-logger').createLogger();
     middlewareEnhancer = applyMiddleware(
       thunk,
+      cmdPortMiddleware(commandPort),
       tcpSocketMiddleware(socket),
       logger
     );
