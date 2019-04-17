@@ -8,7 +8,7 @@ const {pick} = require('./utils');
 
 const isDev = require('electron-is-dev');
 
-module.exports = (socket, ipcMain, windowStore) => {
+module.exports = (socket, commandPort, ipcMain, windowStore) => {
   let middlewareEnhancer;
 
   if (isDev) {

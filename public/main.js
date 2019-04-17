@@ -2,6 +2,7 @@ const electron = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const net = require('net');
+const commandPort = require('./ipserial/cmdport');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -15,7 +16,7 @@ let socket = new net.Socket();
 const windowStore = require('./store/windowStore');
 
 // Initialize redux store
-const store = require('./store/store')(socket, ipcMain, windowStore);
+const store = require('./store/store')(socket, commandPort, ipcMain, windowStore);
 
 app.on('ready', () => {
 
@@ -23,7 +24,7 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow(
     {
       title: 'IMAC TCP Client',
-      resizable: false,
+      resizable: true,
       width: 464,
       height: 419,
       backgroundColor: '#F0F0F0',

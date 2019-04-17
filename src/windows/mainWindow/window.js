@@ -25,10 +25,15 @@ const Row = styled.div`
   display: flex;
   justify-content: space-between;
   height: ${props => props.height};
+  padding: ${props => props.padding}
 `
 
 const EnableDiv = styled.div`
-  padding: 5px 15px;
+
+`
+
+const BaudRateDiv =styled.div`
+
 `
 
 const ActivateJogDiv =styled.div`
@@ -87,14 +92,30 @@ const CheckboxInput = styled.input`
   margin-left: ${props => props.marginLeft};
 `
 
+const Selectbox = props =>
+  <select
+    value={props.value}
+    onChange={props.handleBaudRateSelect}
+  >
+    {
+      props.options.map((option, index) =>
+        <option value={option} key={index}>{option}</option>
+      )
+    }
+  </select>
+
+const SelectboxInput = styled(Selectbox)`
+    width: ${props => props.width}
+`
+
 const ButtonDiv = styled.div`
-  // width: 200px;
   text-align: center;
   line-height: ${props => props.lineHeight};
 `;
 
 const Button = styled.button`
   width: ${props => props.width};
+  height: ${props => props.height};
   margin: 0 10px;
 `;
 
@@ -338,23 +359,49 @@ class Window extends Component {
     return (
       stateReceived ?
       <Div>
-        <EnableDiv>
-          <InputField>
-          <Label
-            width="150px"
-            onClick={e => e.preventDefault()}
-          >
-            <CheckboxInput
-              type="checkbox"
-              id="enable"
-              marginLeft="10px"
-              disabled={!isConnected}
-              checked={isMotorEnabled}
-              onChange={handleMotorEnable}
-            />Enable motor
-          </Label>
-          </InputField>
-        </EnableDiv>
+        <Row padding="7px 30px 0px 20px">
+          <EnableDiv>
+            <InputField>
+            <Label
+              width="165px"
+              onClick={e => e.preventDefault()}
+            >
+              <CheckboxInput
+                type="checkbox"
+                id="enable"
+                marginLeft="10px"
+                disabled={!isConnected}
+                checked={isMotorEnabled}
+                onChange={handleMotorEnable}
+              />Enable motor
+            </Label>
+            </InputField>
+          </EnableDiv>
+          <BaudRateDiv>
+            <InputField>
+              <Label
+                width="60px"
+              >
+                Baudrate
+              </Label>
+              <SelectboxInput
+                width="21px"
+                options={
+                  ['9600', '19200', '38400', '57600', '115200']
+                }
+              />
+            </InputField>
+          </BaudRateDiv>
+          <ButtonDiv>
+            <Button
+              width="70px"
+              height="21px"
+              // onClick={}
+            >
+              Reset
+            </Button>
+          </ButtonDiv>
+        </Row>
         <ActivateJogDiv>
           <InputField>
             <Label
