@@ -11,6 +11,8 @@ module.exports = ffi.Library('./IPSerial', {
   'nsio_end': [int, []],
   'nsio_open': [int, [str, int, ulong]],
   'nsio_close': [int, [int]],
+  'nsio_ioctl': [int, [int, int, int]],
   'nsio_baud': [int, [int, long]],
-  'nsio_break': [int, [int, int]]
+  'nsio_break': [int, [int, int]],
+  'nsio_read': [int, [int, str, int]]
 });
