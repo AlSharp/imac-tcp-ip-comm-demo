@@ -16,7 +16,7 @@ module.exports = (socket, commandPort, ipcMain, windowStore) => {
     const logger = require('redux-logger').createLogger();
     middlewareEnhancer = applyMiddleware(
       thunk,
-      cmdPortMiddleware(commandPort),
+      cmdPortMiddleware(commandPort, socket),
       tcpSocketMiddleware(socket),
       logger
     );

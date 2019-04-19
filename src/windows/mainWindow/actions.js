@@ -145,3 +145,14 @@ export const handleJogAbort = () => (dispatch, getState) => {
     }
   )
 }
+
+export const handleBaudRateSelect = event => (dispatch, getState) => {
+  const {ip, port} = getState().shared;
+  dispatch(
+    {
+      type: 'HANDLE_BAUD_RATE_CHANGE',
+      payload: {baudRate: event.target.value, ip, port},
+      beingDispatchedFurther: true
+    }
+  )
+}

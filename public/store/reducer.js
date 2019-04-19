@@ -7,7 +7,8 @@ module.exports = (state = {
   isJogActivated: false,
   isJogging: false,
   isMoving: false,
-  motorResponse: ''
+  motorResponse: '',
+  baudRate: '9600'
 }, action) => {
 
   switch(action.type) {

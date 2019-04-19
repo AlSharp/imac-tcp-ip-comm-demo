@@ -12,7 +12,8 @@ import {
   handleParameterValueChange,
   handleMoveButtonClick,
   handleMoveAbort,
-  handleJog
+  handleJog,
+  handleBaudRateSelect
 } from './actions';
 
 const Div = styled.div`
@@ -94,6 +95,7 @@ const CheckboxInput = styled.input`
 
 const Selectbox = props =>
   <select
+    disabled={props.disabled}
     value={props.value}
     onChange={props.handleBaudRateSelect}
   >
@@ -347,6 +349,7 @@ class Window extends Component {
       decelerationError,
       distance,
       distanceError,
+      baudRate,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
@@ -354,7 +357,8 @@ class Window extends Component {
       handleParameterValueChange,
       handleMoveButtonClick,
       handleMoveAbort,
-      handleJog
+      handleJog,
+      handleBaudRateSelect
     } = this.props;
     return (
       stateReceived ?
@@ -389,6 +393,9 @@ class Window extends Component {
                 options={
                   ['9600', '19200', '38400', '57600', '115200']
                 }
+                disabled={!isConnected}
+                value={baudRate}
+                handleBaudRateSelect={handleBaudRateSelect}
               />
             </InputField>
           </BaudRateDiv>
@@ -396,7 +403,7 @@ class Window extends Component {
             <Button
               width="70px"
               height="21px"
-              // onClick={}
+              disabled={!isConnected}
             >
               Reset
             </Button>
@@ -480,7 +487,8 @@ const mapStateToProps = state => {
     deceleration: state.local.deceleration,
     decelerationError: state.local.decelerationError,
     distance: state.local.distance,
-    distanceError: state.local.distanceError
+    distanceError: state.local.distanceError,
+    baudRate: state.shared.baudRate
   }
 }
 
@@ -496,6 +504,7 @@ export default connect(
     handleParameterValueChange,
     handleMoveButtonClick,
     handleMoveAbort,
-    handleJog
+    handleJog,
+    handleBaudRateSelect
   }
 )(Window);
