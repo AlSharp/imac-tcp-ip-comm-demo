@@ -113,6 +113,11 @@ handleConnectionClose = (socket) => {
 
     let err;
 
+    const endHandler = () => {
+      console.log('SOCKET END');
+      console.log('AMOUNT OF BYTES WRITTEN ON END: ', socket.bytesWritten);
+    }
+
     const errorHandler = error => {
       err = error;
     }
@@ -127,6 +132,7 @@ handleConnectionClose = (socket) => {
       return;
     }
 
+    socket.once('end', endHandler);
     socket.once('error', errorHandler);
     socket.once('close', closeHandler);
 
