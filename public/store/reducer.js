@@ -9,7 +9,8 @@ module.exports = (state = {
   isMoving: false,
   motorResponse: '',
   baudRate: '9600',
-  status: ''
+  status: '',
+  axis: '0'
 }, action) => {
 
   switch(action.type) {
@@ -186,6 +187,12 @@ module.exports = (state = {
     }
     case 'HANDLE_TEST_MSG_AFTER_BREAK_COMMAND_SEND_REJECTED': {
       return state;
+    }
+    case 'HANDLE_AXIS_CHANGE': {
+      return {
+        ...state,
+        axis: action.payload
+      }
     }
     default:
       return state;

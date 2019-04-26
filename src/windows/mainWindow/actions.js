@@ -167,3 +167,13 @@ export const handleBreakCommandSend = () => (dispatch, getState) => {
     }
   )
 }
+
+export const handleAxisChange = event => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_AXIS_CHANGE',
+      payload: event.target.value,
+      beingDispatchedFurther: true
+    }
+  )
+}

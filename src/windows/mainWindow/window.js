@@ -14,7 +14,8 @@ import {
   handleMoveAbort,
   handleJog,
   handleBaudRateSelect,
-  handleBreakCommandSend
+  handleBreakCommandSend,
+  handleAxisChange
 } from './actions';
 
 const Div = styled.div`
@@ -34,6 +35,10 @@ const EnableDiv = styled.div`
 
 `
 
+const AxisDiv = styled.div`
+
+`;
+
 const BaudRateDiv =styled.div`
 
 `
@@ -41,7 +46,7 @@ const BaudRateDiv =styled.div`
 const ActivateJogDiv =styled.div`
   display: inline-block;
   position: absolute;
-  top: 140px;
+  top: 172px;
   left: 28px;
   width: 150px;
 `;
@@ -94,11 +99,12 @@ const CheckboxInput = styled.input`
   margin-left: ${props => props.marginLeft};
 `
 
-const Selectbox = props =>
+const SelectboxInput = props =>
   <select
     disabled={props.disabled}
     value={props.value}
-    onChange={props.handleBaudRateSelect}
+    onChange={props.handleChange}
+    style={{width: props.width}}
   >
     {
       props.options.map((option, index) =>
@@ -106,10 +112,6 @@ const Selectbox = props =>
       )
     }
   </select>
-
-const SelectboxInput = styled(Selectbox)`
-    width: ${props => props.width}
-`
 
 const ButtonDiv = styled.div`
   text-align: center;
@@ -352,6 +354,7 @@ class Window extends Component {
       distanceError,
       baudRate,
       status,
+      axis,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
@@ -361,12 +364,13 @@ class Window extends Component {
       handleMoveAbort,
       handleJog,
       handleBaudRateSelect,
-      handleBreakCommandSend
+      handleBreakCommandSend,
+      handleAxisChange
     } = this.props;
     return (
       stateReceived ?
       <Div>
-        <Row padding="7px 30px 0px 20px">
+        <Row padding="7px 127px 0px 20px">
           <EnableDiv>
             <InputField>
             <Label
@@ -384,6 +388,26 @@ class Window extends Component {
             </Label>
             </InputField>
           </EnableDiv>
+          <AxisDiv>
+            <InputField>
+              <Label
+                width="60px"
+              >
+                Axis
+              </Label>
+              <SelectboxInput
+                width="70px"
+                options={
+                  Array.from({length: 16}, (value, key) => key.toString())
+                }
+                disabled={!isConnected}
+                value={axis}
+                handleChange={handleAxisChange}
+              />
+            </InputField>
+          </AxisDiv>
+        </Row>
+        <Row padding="7px 30px 0px 195px">
           <BaudRateDiv>
             <InputField>
               <Label
@@ -392,13 +416,13 @@ class Window extends Component {
                 Baudrate
               </Label>
               <SelectboxInput
-                width="21px"
+                width="70px"
                 options={
                   ['9600', '19200', '38400', '57600', '115200']
                 }
                 disabled={!isConnected}
                 value={baudRate}
-                handleBaudRateSelect={handleBaudRateSelect}
+                handleChange={handleBaudRateSelect}
               />
             </InputField>
           </BaudRateDiv>
@@ -489,7 +513,8 @@ const mapStateToProps = state => {
     distance: state.local.distance,
     distanceError: state.local.distanceError,
     baudRate: state.shared.baudRate,
-    status: state.shared.status
+    status: state.shared.status,
+    axis: state.shared.axis
   }
 }
 
@@ -507,6 +532,7 @@ export default connect(
     handleMoveAbort,
     handleJog,
     handleBaudRateSelect,
-    handleBreakCommandSend
+    handleBreakCommandSend,
+    handleAxisChange
   }
 )(Window);
