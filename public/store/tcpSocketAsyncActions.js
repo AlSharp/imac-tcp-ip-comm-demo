@@ -1,3 +1,5 @@
+const {showMeListeners} = require('./utils');
+
 const writeOne = (socket, command) => {
   return new Promise((resolve, reject) => {
     let timeout;

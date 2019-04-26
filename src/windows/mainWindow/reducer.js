@@ -66,7 +66,8 @@ const shared = (state = {
   isJogActivated: false,
   isJogging: false,
   motorResponse: '',
-  baudRate: '9600'
+  baudRate: '9600',
+  status: ''
 }, action) => {
 
   switch(action.type) {

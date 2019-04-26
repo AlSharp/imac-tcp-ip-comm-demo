@@ -156,3 +156,14 @@ export const handleBaudRateSelect = event => (dispatch, getState) => {
     }
   )
 }
+
+export const handleBreakCommandSend = () => (dispatch, getState) => {
+  const {ip, port} = getState().shared;
+  dispatch(
+    {
+      type: 'HANDLE_BREAK_COMMAND_SEND',
+      payload: {ip, port},
+      beingDispatchedFurther: true
+    }
+  )
+}

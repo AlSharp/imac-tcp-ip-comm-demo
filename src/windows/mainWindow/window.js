@@ -13,7 +13,8 @@ import {
   handleMoveButtonClick,
   handleMoveAbort,
   handleJog,
-  handleBaudRateSelect
+  handleBaudRateSelect,
+  handleBreakCommandSend
 } from './actions';
 
 const Div = styled.div`
@@ -350,6 +351,7 @@ class Window extends Component {
       distance,
       distanceError,
       baudRate,
+      status,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
@@ -358,7 +360,8 @@ class Window extends Component {
       handleMoveButtonClick,
       handleMoveAbort,
       handleJog,
-      handleBaudRateSelect
+      handleBaudRateSelect,
+      handleBreakCommandSend
     } = this.props;
     return (
       stateReceived ?
@@ -404,6 +407,7 @@ class Window extends Component {
               width="70px"
               height="21px"
               disabled={!isConnected}
+              onClick={handleBreakCommandSend}
             >
               Reset
             </Button>
@@ -456,11 +460,7 @@ class Window extends Component {
         <StatusBar>
           <Status>
             <span>Status: </span>
-            {
-              isConnected ?
-              `Connected to ${ip}:${port}` :
-              'Disconnected'
-            }
+            {status}
           </Status>
           <LED connected={isConnected}/>
         </StatusBar>
@@ -488,7 +488,8 @@ const mapStateToProps = state => {
     decelerationError: state.local.decelerationError,
     distance: state.local.distance,
     distanceError: state.local.distanceError,
-    baudRate: state.shared.baudRate
+    baudRate: state.shared.baudRate,
+    status: state.shared.status
   }
 }
 
@@ -505,6 +506,7 @@ export default connect(
     handleMoveButtonClick,
     handleMoveAbort,
     handleJog,
-    handleBaudRateSelect
+    handleBaudRateSelect,
+    handleBreakCommandSend
   }
 )(Window);
