@@ -3,8 +3,8 @@ module.exports = (state = {
   connectionError: '',
   port: '',
   ip: '',
-  isMotorEnabled: false,
-  isJogActivated: false,
+  isMotorEnabled: [],
+  isJogActivated: [],
   isJogging: false,
   isMoving: false,
   motorResponse: '',
@@ -53,8 +53,12 @@ module.exports = (state = {
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
       return {
         ...state,
-        isMotorEnabled: action.payload,
-        isJogActivated: state.isJogActivated && action.payload,
+        isMotorEnabled: action.payload.enabled ?
+          state.isMotorEnabled.concat(action.payload.axis) :
+          state.isMotorEnabled.filter(axis => axis !== action.payload.axis),
+        isJogActivated: state.isJogActivated.includes(action.payload.axis) && action.payload.enabled ?
+        state.isJogActivated.concat(action.payload.axis) :
+        state.isJogActivated.filter(axis => axis !== action.payload.axis),
         motorResponse: '',
         status: action.payload ? 'Motor enabled' : 'Motor disabled'
       }
@@ -81,7 +85,7 @@ module.exports = (state = {
     }
     case 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED': {
       return {
-        ...false,
+        ...state,
         isMoving: true,
         status: 'Moving'
       }
@@ -123,7 +127,9 @@ module.exports = (state = {
     case 'HANDLE_JOG_ACTIVATE': {
       return {
         ...state,
-        isJogActivated: action.payload,
+        isJogActivated: action.payload.activated ?
+        state.isJogActivated.concat(action.payload.axis) :
+        state.isJogActivated.filter(axis => axis !== action.payload.axis),
         status: 'Ok'
       }
     }
@@ -154,6 +160,7 @@ module.exports = (state = {
     }
     case 'HANDLE_SERIAL_SERVER_BAUD_RATE_SET_REJECTED': {
       return {
+        ...state,
         status: 'Could not set motion server baud rate. Error code: '
       }
     }

@@ -141,9 +141,9 @@ handleConnectionClose = (socket) => {
 }
 
 const handleMotorEnable = (socket, action) => {
-  let command = action.payload ?
-    's r0x70 2 0' :
-    's r0x70 258 0';
+  let command = action.payload.enabled ?
+    `${action.payload.axis} s r0x70 2 0` :
+    `${action.payload.axis} s r0x70 258 0`;
   // let command = action.payload ?
   //   's r0x70 258 0\r' :
   //   's r0x70 2 0\r';
@@ -154,30 +154,40 @@ const handleASCIICommandSend = (socket, action) =>
   writeOne(socket, action.payload);
 
 const handleDistanceMoveExecute = (socket, action) => {
-  let commands = ['s r0xc8 256', `s r0xca ${action.payload}`, 't 1'];
+  const {axis, distance} = action.payload;
+  let commands = [
+    `${axis} s r0xc8 256`,
+    `${axis} s r0xca ${distance}`,
+    `${axis} t 1`
+  ];
   return write(socket, commands);
 }
 
 const handleJog = (socket, action) => {
   let commands;
   if(action.payload) {
+    const {
+      axis,
+      direction,
+      payload: {velocity, acceleration, deceleration} 
+    } = action;
     commands = [
-      's r0xc8 2',
-      `s r0xca ${action.direction === 'positive' ? '1' : '-1'}`,
-      `s r0xcb ${action.payload.velocity}`,
-      `s r0xcc ${action.payload.acceleration}`,
-      `s r0xcd ${action.payload.deceleration}`,
-      `s r0xcf ${action.payload.deceleration}`,
-      't 1'
+      `${axis} s r0xc8 2`,
+      `${axis} s r0xca ${direction === 'positive' ? '1' : '-1'}`,
+      `${axis} s r0xcb ${velocity}`,
+      `${axis} s r0xcc ${acceleration}`,
+      `${axis} s r0xcd ${deceleration}`,
+      `${axis} s r0xcf ${deceleration}`,
+      `${axis} t 1`
     ]
   } else {
-    commands = ['t 1'];
+    commands = [` ${action.axis} t 1`];
   }
   return write(socket, commands);
 }
 
 const handleMoveAbort = (socket, action) =>
-  writeOne(socket, 't 0');
+  writeOne(socket, `${action.payload} t 0`);
 
 
 module.exports ={

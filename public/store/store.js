@@ -23,6 +23,7 @@ module.exports = (socket, commandPort, ipcMain, windowStore) => {
   } else {
     middlewareEnhancer = applyMiddleware(
       thunk,
+      cmdPortMiddleware(commandPort, socket),
       tcpSocketMiddleware(socket)
     )
   }

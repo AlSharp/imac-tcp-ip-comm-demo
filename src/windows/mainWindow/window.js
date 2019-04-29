@@ -382,7 +382,7 @@ class Window extends Component {
                 id="enable"
                 marginLeft="10px"
                 disabled={!isConnected}
-                checked={isMotorEnabled}
+                checked={isMotorEnabled.includes(axis)}
                 onChange={handleMotorEnable}
               />Enable motor
             </Label>
@@ -447,15 +447,15 @@ class Window extends Component {
                 type="checkbox"
                 id="activate-jog"
                 marginLeft="0"
-                disabled={!isConnected || !isMotorEnabled}
-                checked={isJogActivated}
+                disabled={!isConnected || !isMotorEnabled.includes(axis)}
+                checked={isJogActivated.includes(axis)}
                 onChange={handleJogActivate}
               />Activate Jog
             </Label>
           </InputField>
         </ActivateJogDiv>
         <JogGroupBox
-          disabled={!isConnected || !isMotorEnabled || !isJogActivated}
+          disabled={!isConnected || !isMotorEnabled.includes(axis) || !isJogActivated.includes(axis)}
           velocity={velocity}
           velocityError={velocityError}
           acceleration={acceleration}
@@ -467,7 +467,7 @@ class Window extends Component {
           handleMoveAbort={handleMoveAbort}
         />
         <MoveGroupBox
-          disabled={!isConnected || !isMotorEnabled || isJogActivated}
+          disabled={!isConnected || !isMotorEnabled.includes(axis) || isJogActivated.includes(axis)}
           distance={distance}
           distanceError={distanceError}
           handleParameterValueChange={handleParameterValueChange}
@@ -475,7 +475,7 @@ class Window extends Component {
           handleMoveAbort={handleMoveAbort}
         />
         <ASCIICommandGroupBox
-          disabled={!isConnected || isJogActivated}
+          disabled={!isConnected || isJogActivated.includes(axis)}
           ASCIICommand={ASCIICommand}
           motorResponse={motorResponse}
           handleASCIICommandChange={handleASCIICommandChange}

@@ -17,21 +17,29 @@ export const handleSharedStateUpdate = state => dispatch => {
   )
 }
 
-export const handleMotorEnable = event => dispatch => {
+export const handleMotorEnable = event => (dispatch, getState) => {
+  const axis = getState().shared.axis;
   dispatch(
     {
       type: 'HANDLE_MOTOR_ENABLE',
-      payload: event.target.checked,
+      payload: {
+        enabled: event.target.checked,
+        axis: axis
+      },
       beingDispatchedFurther: true
     }
   )
 }
 
-export const handleJogActivate = event => dispatch => {
+export const handleJogActivate = event => (dispatch, getState) => {
+  const axis = getState().shared.axis;
   dispatch(
     {
       type: 'HANDLE_JOG_ACTIVATE',
-      payload: event.target.checked,
+      payload: {
+        activated: event.target.checked,
+        axis: axis
+      },
       beingDispatchedFurther: true
     }
   )
@@ -80,22 +88,25 @@ export const handleParameterValueChange = (event, parameterName, validationFunct
 
 export const handleMoveButtonClick = () => (dispatch, getState) => {
   const {distance, distanceError} = getState().local;
+  const axis = getState().shared.axis
   if (distanceError || distance.length === 0) {
     return;
   }
   dispatch(
     {
       type: 'HANDLE_DISTANCE_MOVE_EXECUTE',
-      payload: distance,
+      payload: {distance, axis},
       beingDispatchedFurther: true
     }
   )
 }
 
-export const handleMoveAbort = () => dispatch => {
+export const handleMoveAbort = () => (dispatch, getState) => {
+  const axis = getState().shared.axis;
   dispatch(
     {
       type: 'HANDLE_MOVE_ABORT',
+      payload: axis,
       beingDispatchedFurther: true
     }
   )
@@ -107,6 +118,7 @@ export const handleJog = direction => (dispatch, getState) => {
     areJogParamsUpdated,
     velocityError, accelerationError, decelerationError
   } = getState().local;
+  const axis = getState().shared.axis;
   if (velocityError || accelerationError || decelerationError) {
     return;
   }
@@ -122,25 +134,7 @@ export const handleJog = direction => (dispatch, getState) => {
       type: 'HANDLE_JOG',
       payload,
       direction,
-      beingDispatchedFurther: true
-    }
-  )
-}
-
-export const handleJogAbort = () => (dispatch, getState) => {
-  const {
-    velocity, acceleration, deceleration,
-    velocityError, accelerationError, decelerationError
-  } = getState().local;
-  if (velocityError || accelerationError || decelerationError) {
-    return;
-  }
-  if (velocity.length === 0 || acceleration.length === 0 || deceleration.length === 0) {
-    return;
-  }
-  dispatch(
-    {
-      type: 'HANDLE_JOG_ABORT',
+      axis,
       beingDispatchedFurther: true
     }
   )

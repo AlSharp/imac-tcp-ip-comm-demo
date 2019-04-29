@@ -25,8 +25,8 @@ app.on('ready', () => {
     {
       title: 'IMAC TCP Client',
       resizable: true,
-      width: 464,
-      height: 419,
+      width: 474,
+      height: 462,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true
