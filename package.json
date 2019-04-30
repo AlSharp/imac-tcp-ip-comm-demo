@@ -1,6 +1,6 @@
 {
-  "name": "imac-tcp-ip-comm-demo",
-  "version": "0.1.0",
+  "name": "IMAC_Motion_Server_Client",
+  "version": "1.0.0",
   "main": "public/main.js",
   "private": true,
   "homepage": "./",
@@ -25,8 +25,41 @@
     "dev": "react-scripts start",
     "electron-dev": "electron .",
     "preelectron-pack": "npm run build",
-    "electron-pack": "electron-builder -w --ia32 -c.extraMetadata.main=build/main.js",
+    "electron-pack": "electron-builder",
     "electron-rebuild": "./node_modules/.bin/electron-rebuild.cmd"
+  },
+  "build": {
+    "extraMetadata": {
+      "main": "build/main.js"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32", "x64"
+          ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "./build/ipserial/system32/x32",
+          "to": "./system32/x32",
+          "filter": ["*.dll"]
+        },
+        {
+          "from": "./build/ipserial/system32/x64",
+          "to": "./system32/x64",
+          "filter": ["*.dll"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "allowElevation": true
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -46,6 +79,9 @@
     "typescript": "^3.4.1",
     "wait-on": "^3.2.0"
   },
-  "author": "Albert Sharapov",
+  "author": {
+    "name": "Albert Sharapov",
+    "email": "albert.sharapov@gmail.com"
+  },
   "license": "MIT"
 }

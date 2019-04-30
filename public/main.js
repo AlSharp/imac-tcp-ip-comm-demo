@@ -2,7 +2,7 @@ const electron = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const net = require('net');
-const commandPort = require('./ipserial/cmdport');
+const commandPort = require('./ipserial/cmdport')();
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -23,7 +23,7 @@ app.on('ready', () => {
   // Create main window
   mainWindow = new BrowserWindow(
     {
-      title: 'IMAC TCP Client',
+      title: 'IMAC Motion Server Client',
       resizable: true,
       width: 474,
       height: 462,
