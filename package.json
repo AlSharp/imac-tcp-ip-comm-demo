@@ -22,7 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "react-scripts start",
+    "dev": "SET BROWSER=none&&react-scripts start",
     "electron-dev": "electron .",
     "preelectron-pack": "npm run build",
     "electron-pack": "electron-builder",
