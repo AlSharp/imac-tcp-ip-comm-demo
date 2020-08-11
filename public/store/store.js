@@ -1,7 +1,9 @@
 const {createStore, applyMiddleware, compose} = require('redux');
 const thunk = require('redux-thunk').default;
-const cmdPortMiddleware = require('./cmdPortMiddleware');
+const connectionMiddleware = require('./connectionMiddleware');
+// const cmdPortMiddleware = require('./cmdPortMiddleware');
 const tcpSocketMiddleware = require('./tcpSocketMiddleware');
+const serialPortMiddleware = require('./serialPortMiddleware');
 const electronReduxNotifier = require('./electronReduxNotifier');
 const reducer = require('./reducer');
 
@@ -9,22 +11,26 @@ const {pick} = require('./utils');
 
 const isDev = require('electron-is-dev');
 
-module.exports = (socket, commandPort, ipcMain, windowStore) => {
+module.exports = (socket, commandPort, usbSerial, ipcMain, windowStore) => {
   let middlewareEnhancer;
 
   if (isDev) {
     const logger = require('redux-logger').createLogger();
     middlewareEnhancer = applyMiddleware(
       thunk,
-      cmdPortMiddleware(commandPort, socket),
+      connectionMiddleware(socket, usbSerial),
+      // cmdPortMiddleware(commandPort, socket),
       tcpSocketMiddleware(socket),
+      serialPortMiddleware(usbSerial),
       logger
     );
   } else {
     middlewareEnhancer = applyMiddleware(
       thunk,
-      cmdPortMiddleware(commandPort, socket),
-      tcpSocketMiddleware(socket)
+      connectionMiddleware(socket),
+      // cmdPortMiddleware(commandPort, socket),
+      tcpSocketMiddleware(socket),
+      serialPortMiddleware(SerialPort)
     )
   }
 

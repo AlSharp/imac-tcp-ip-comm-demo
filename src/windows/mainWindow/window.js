@@ -5,6 +5,11 @@ import styled from 'styled-components';
 import {
   handleInitialStateGet,
   handleSharedStateUpdate,
+  handleIPConnect,
+  handleIPDisconnect,
+  handleIPChange,
+  handleIPPortChange,
+  handleUsbSerialRefresh,
   handleMotorEnable,
   handleJogActivate,
   handleASCIICommandChange,
@@ -13,74 +18,205 @@ import {
   handleMoveButtonClick,
   handleMoveAbort,
   handleJog,
-  handleBaudRateSelect,
-  handleBreakCommandSend,
   handleAxisChange
 } from './actions';
 
 const Div = styled.div`
-  width: 458px;
+  width: ${props => props.width};
+  height: ${props => props.height};
+  padding: ${props => props.padding};
+  margin: ${props => props.margin};
   /* box-sizing: border-box;
   border: 1px solid; */
+`;
+
+const Form = styled.form`
+
 `;
 
 const Row = styled.div`
   display: flex;
   justify-content: space-between;
   height: ${props => props.height};
-  padding: ${props => props.padding}
-`
-
-const EnableDiv = styled.div`
-
-`
-
-const AxisDiv = styled.div`
-
+  padding: ${props => props.padding};
 `;
 
-const BaudRateDiv =styled.div`
+const ConnectionMethods = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 15px;
+`;
 
-`
+const EthernetGroupBox = ({
+  isConnected,
+  port, ip,
+  handleIPChange,
+  handleIPPortChange,
+  handleIPConnect,
+  handleIPDisconnect
+}) => {
+  const handleSubmit = event => {
+    event.preventDefault();
+    const port = document.getElementById('port').value;
+    const ip = document.getElementById('ip').value;
+    handleIPConnect({port, ip});
+  }
+  return(
+    <Div width="200px">
+      <FieldSet width="200px">
+        <Legend>
+          Ethernet
+        </Legend>
+        <Div padding="5px 15px 8px 15px">
+          <Form onSubmit={handleSubmit}>
+            <InputField>
+              <Label htmlFor="port" width="65px">Port</Label>
+              <TextInput
+                type="text"
+                id="port"
+                placeholder="8888"
+                width="99px"
+                value={port}
+                onChange={handleIPPortChange}
+              />
+            </InputField>
+            <InputField>
+              <Label htmlFor="ip" width="65px">IP address</Label>
+              <TextInput
+                type="text"
+                id="ip"
+                placeholder="192.168.0.254"
+                width="99px"
+                value={ip}
+                onChange={handleIPChange}
+              />
+            </InputField>
+            <ButtonDiv align="right">
+              {
+                !isConnected ?
+                <Button type="submit">Connect</Button> :
+                <Button
+                  type="button"
+                  onClick={handleIPDisconnect}
+                >
+                  Disconnect
+                </Button>
+              }
+            </ButtonDiv>
+          </Form>
+        </Div>
+      </FieldSet>
+    </Div>
+  )
+}
 
-const ActivateJogDiv =styled.div`
+const _ComPorts = ({className, comPorts}) => {
+  return(
+    <div className={className}>
+      <select size="3">
+        {
+          comPorts.map(port =>
+            <option
+              key={port.serialNumber}
+            >
+              {port.path}
+            </option>  
+          )
+        }
+      </select>
+    </div>
+  )
+}
+
+const ComPorts = styled(_ComPorts)`
+  & > select {
+    font-size: 12px;
+    width: 100%;
+    height: 48px;
+    margin: 3px 0;
+  }
+`;
+
+const COMGroupBox = ({
+  isConnected,
+  comPorts,
+  handleUsbSerialRefresh
+}) => {
+  return(
+    <Div width="200px">
+      <FieldSet width="200px">
+        <Legend>
+          COM port
+        </Legend>
+        <Div padding="5px 15px 8px 15px">
+          <ComPorts
+            comPorts={comPorts}
+          />
+          <ButtonDiv align="right">
+            {
+              !isConnected ?
+              <Button
+                margin="0"
+                width="70px"
+                onClick={handleUsbSerialRefresh}
+              >
+                Refresh
+              </Button> :
+              null
+            }
+            {
+              !isConnected ?
+              <Button type="submit" width="70px">Connect</Button> :
+              <Button
+                type="button"
+                onClick={handleIPDisconnect}
+              >
+                Disconnect
+              </Button>
+            }
+          </ButtonDiv>
+        </Div>
+      </FieldSet>
+    </Div>
+  )
+}
+
+const ActivateJogDiv = styled.div`
   display: inline-block;
   position: absolute;
-  top: 172px;
+  top: 175px;
   left: 28px;
   width: 150px;
 `;
 
 const GroupBoxDiv = styled.div`
   padding: 5px 15px;
-`
+`;
 
 const FieldSet = styled.fieldset`
-  width: 400px;
+  padding: 0;
+  min-width: 0;
   margin: 0;
   border-style: solid;
   border-width: 1px;
   border-color: #BFBFBF;
   border-radius: 3px;
-`
+`;
 
 const Legend = styled.legend`
   font-size: 12px;
-`
-
-const InputListDiv = styled.div`
-  
-`
+  margin-left: 12px;
+`;
 
 const InputField = styled.div`
   font-size: 12px;
-  padding: 3px;
-`
+  padding: 3px 0;
+`;
 
 const Label = styled.label`
   display: inline-block;
   width: ${props => props.width};
-`
+`;
 
 const TextInput = styled.input`
   width: ${props => props.width};
@@ -88,7 +224,7 @@ const TextInput = styled.input`
     props.validationError !== 'Required' ?
     'red' :
     'initial'
-  }
+  };
 `
 
 const CheckboxInput = styled.input`
@@ -114,14 +250,14 @@ const SelectboxInput = props =>
   </select>
 
 const ButtonDiv = styled.div`
-  text-align: center;
-  line-height: ${props => props.lineHeight};
+  text-align: ${props => props.align || 'center'};
+  margin: ${props => props.margin};
 `;
 
 const Button = styled.button`
   width: ${props => props.width};
   height: ${props => props.height};
-  margin: 0 10px;
+  margin: ${props => props.margin || '0 0 0 20px'};
 `;
 
 const StatusBar = styled.div`
@@ -155,75 +291,14 @@ const shouldBeInteger = value => {
     undefined : 'Should be integer';
 }
 
-const shouldBePositiveInteger = value => {
-  const val = Math.floor(Number(value));
-  return val !== Infinity && String(val) === value && val >= 0 ?
-    undefined : 'Should be positive integer';
-}
-
-
-
 const JogGroupBox = props =>
   <GroupBoxDiv>
     <FieldSet disabled={props.disabled}>
       <Legend>
         Jog
       </Legend>
-      <Row>
-        <InputListDiv>
-          <InputField>
-            <Label width="80px">Velocity</Label>
-            <TextInput
-              type="text"
-              id="velocity"
-              placeholder="counts/sec"
-              width="100px"
-              value={props.velocity}
-              validationError={props.velocityError}
-              onChange={e => props.handleParameterValueChange(
-                e,
-                'velocity',
-                [required, shouldBePositiveInteger]
-                )
-              }
-            />
-          </InputField>
-          <InputField>
-            <Label width="80px">Acceleration</Label>
-            <TextInput
-              type="text"
-              id="acceleration"
-              placeholder="counts/sec2"
-              width="100px"
-              value={props.acceleration}
-              validationError={props.accelerationError}
-              onChange={e => props.handleParameterValueChange(
-                e,
-                'acceleration',
-                [required, shouldBePositiveInteger]
-                )
-              }
-            />
-          </InputField>
-          <InputField>
-            <Label width="80px">Deceleration</Label>
-            <TextInput
-              type="text"
-              id="deceleration"
-              placeholder="counts/sec2"
-              width="100px"
-              value={props.deceleration}
-              validationError={props.decelerationError}
-              onChange={e => props.handleParameterValueChange(
-                e,
-                'deceleration',
-                [required, shouldBePositiveInteger]
-                )
-              }
-            />
-          </InputField>
-        </InputListDiv>
-        <ButtonDiv lineHeight="81px">
+      <Row padding="5px 15px">
+        <ButtonDiv margin="0 0 4px 215px">
           <Button
             width="70px"
             onMouseDown={e => props.handleJog('positive')}
@@ -240,8 +315,6 @@ const JogGroupBox = props =>
           </Button>
         </ButtonDiv>
       </Row>
-      {/* Make a room for Activate check box */}
-      <Row height="22px" /> 
     </FieldSet>
   </GroupBoxDiv>
 
@@ -251,8 +324,8 @@ const MoveGroupBox = props =>
       <Legend>
         Move
       </Legend>
-      <Row>
-        <InputListDiv>
+      <Row padding="5px 15px">
+        <Div>
           <InputField>
             <Label width="80px">Distance</Label>
             <TextInput
@@ -270,7 +343,7 @@ const MoveGroupBox = props =>
               }
             />
           </InputField>
-        </InputListDiv>
+        </Div>
         <ButtonDiv>
           <Button
             width="70px"
@@ -296,13 +369,13 @@ const ASCIICommandGroupBox = props =>
       <Legend>
         ASCII Command Interface
       </Legend>
-      <InputListDiv>
+      <Div padding="5px 15px">
         <InputField>
           <Label width="80px">Command</Label>
           <TextInput
             type="text"
             id="ascii-command"
-            width="300px"
+            width="311px"
             value={props.ASCIICommand}
             onChange={props.handleASCIICommandChange}
             onKeyDown={props.handleASCIICommandSubmit}
@@ -313,12 +386,12 @@ const ASCIICommandGroupBox = props =>
           <TextInput
             type="text"
             id="response"
-            width="300px"
+            width="311px"
             value={props.motorResponse}
             readOnly
           />
         </InputField>
-      </InputListDiv>
+      </Div>
     </FieldSet>
   </GroupBoxDiv>
 
@@ -338,8 +411,9 @@ class Window extends Component {
     const {
       stateReceived,
       isConnected,
-      port,
-      ip,
+      connectionError,
+      comPorts,
+      port, ip,
       isMotorEnabled,
       isJogActivated,
       ASCIICommand,
@@ -352,9 +426,13 @@ class Window extends Component {
       decelerationError,
       distance,
       distanceError,
-      baudRate,
       status,
       axis,
+      handleIPChange,
+      handleIPPortChange,
+      handleIPConnect,
+      handleIPDisconnect,
+      handleUsbSerialRefresh,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
@@ -363,15 +441,31 @@ class Window extends Component {
       handleMoveButtonClick,
       handleMoveAbort,
       handleJog,
-      handleBaudRateSelect,
-      handleBreakCommandSend,
       handleAxisChange
     } = this.props;
     return (
       stateReceived ?
-      <Div>
-        <Row padding="7px 127px 0px 20px">
-          <EnableDiv>
+      <Div width="458px">
+        <ConnectionMethods>
+          <EthernetGroupBox
+            isConnected={isConnected}
+            connectionError={connectionError}
+            port={port}
+            ip={ip}
+            handleIPChange={handleIPChange}
+            handleIPPortChange={handleIPPortChange}
+            handleIPConnect={handleIPConnect}
+            handleIPDisconnect={handleIPDisconnect}
+          />
+          <COMGroupBox
+            isConnected={isConnected}
+            connectionError={connectionError}
+            comPorts={comPorts}
+            handleUsbSerialRefresh={handleUsbSerialRefresh}
+          />
+        </ConnectionMethods>
+        <Row padding="7px 122px 0px 20px">
+          <Div>
             <InputField>
             <Label
               width="165px"
@@ -387,8 +481,8 @@ class Window extends Component {
               />Enable motor
             </Label>
             </InputField>
-          </EnableDiv>
-          <AxisDiv>
+          </Div>
+          <Div>
             <InputField>
               <Label
                 width="60px"
@@ -405,37 +499,7 @@ class Window extends Component {
                 handleChange={handleAxisChange}
               />
             </InputField>
-          </AxisDiv>
-        </Row>
-        <Row padding="7px 30px 0px 195px">
-          <BaudRateDiv>
-            <InputField>
-              <Label
-                width="60px"
-              >
-                Baudrate
-              </Label>
-              <SelectboxInput
-                width="70px"
-                options={
-                  ['9600', '19200', '38400', '57600', '115200']
-                }
-                disabled={!isConnected}
-                value={baudRate}
-                handleChange={handleBaudRateSelect}
-              />
-            </InputField>
-          </BaudRateDiv>
-          <ButtonDiv>
-            <Button
-              width="70px"
-              height="21px"
-              disabled={!isConnected}
-              onClick={handleBreakCommandSend}
-            >
-              Reset
-            </Button>
-          </ButtonDiv>
+          </Div>
         </Row>
         <ActivateJogDiv>
           <InputField>
@@ -498,6 +562,8 @@ const mapStateToProps = state => {
   return {
     stateReceived: state.local.stateReceived,
     isConnected: state.shared.isConnected,
+    connectionError: state.shared.connectionError,
+    comPorts: state.shared.comPorts,
     ip: state.shared.ip,
     port: state.shared.port,
     isMotorEnabled: state.shared.isMotorEnabled,
@@ -523,6 +589,11 @@ export default connect(
   {
     handleInitialStateGet,
     handleSharedStateUpdate,
+    handleIPConnect,
+    handleIPDisconnect,
+    handleIPChange,
+    handleIPPortChange,
+    handleUsbSerialRefresh,
     handleMotorEnable,
     handleJogActivate,
     handleASCIICommandChange,
@@ -531,8 +602,6 @@ export default connect(
     handleMoveButtonClick,
     handleMoveAbort,
     handleJog,
-    handleBaudRateSelect,
-    handleBreakCommandSend,
     handleAxisChange
   }
 )(Window);

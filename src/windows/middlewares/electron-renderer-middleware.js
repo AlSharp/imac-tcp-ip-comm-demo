@@ -2,8 +2,6 @@ const asyncAction = (ipcRenderer, action) => {
   return new Promise((resolve, reject) => {
     ipcRenderer.send('window::req', action);
     ipcRenderer.once(`${action.windowName}::res`, (e, res) => {
-      console.log('EVENT SENDER ID: ', e.senderId);
-      console.log('res: ', res);
       if (res.actionError) {
         return reject(res);
       }

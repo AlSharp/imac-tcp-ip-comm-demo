@@ -60,6 +60,10 @@ const local = (state = {
 
 const shared = (state = {
   isConnected: false,
+  connectionType: '',
+  connectionError: '',
+  comPorts: [],
+  comPort: '',
   port: '',
   ip: '',
   isMotorEnabled: false,
@@ -82,6 +86,18 @@ const shared = (state = {
       return {
         ...state,
         ...action.payload
+      }
+    }
+    case 'HANDLE_PORT_CHANGE': {
+      return {
+        ...state,
+        port: action.payload
+      }
+    }
+    case 'HANDLE_IP_CHANGE': {
+      return {
+        ...state,
+        ip: action.payload
       }
     }
 

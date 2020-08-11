@@ -1,5 +1,5 @@
 {
-  "name": "IMAC_Motion_Server_Client",
+  "name": "imaceth",
   "version": "1.0.0",
   "main": "public/main.js",
   "private": true,
@@ -15,6 +15,7 @@
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "ref": "^1.3.5",
+    "serialport": "^9.0.1",
     "styled-components": "^4.2.0"
   },
   "scripts": {
@@ -37,7 +38,8 @@
         {
           "target": "nsis",
           "arch": [
-            "ia32", "x64"
+            "ia32",
+            "x64"
           ]
         }
       ],
@@ -45,12 +47,16 @@
         {
           "from": "./build/ipserial/system32/x32",
           "to": "./system32/x32",
-          "filter": ["*.dll"]
+          "filter": [
+            "*.dll"
+          ]
         },
         {
           "from": "./build/ipserial/system32/x64",
           "to": "./system32/x64",
-          "filter": ["*.dll"]
+          "filter": [
+            "*.dll"
+          ]
         }
       ]
     },
@@ -74,6 +80,7 @@
     "concurrently": "^4.1.0",
     "electron": "^4.1.3",
     "electron-builder": "^20.40.2",
+    "electron-log": "^4.2.2",
     "electron-rebuild": "^1.8.4",
     "redux-logger": "^3.0.6",
     "typescript": "^3.4.1",

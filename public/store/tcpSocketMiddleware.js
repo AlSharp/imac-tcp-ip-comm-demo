@@ -1,6 +1,4 @@
 const {
-  handleConnectionCreate,
-  handleConnectionClose,
   handleMotorEnable,
   handleASCIICommandSend,
   handleDistanceMoveExecute,
@@ -11,42 +9,6 @@ const {showMeListeners} = require('./utils');
 
 module.exports = socket => store => next => action => {
   switch(action.type) {
-    case 'HANDLE_CONNECTION_CREATE': {
-      handleConnectionCreate(socket, action)
-        .then(data => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          showMeListeners(socket, 'ready');
-          action.type = 'HANDLE_CONNECTION_CREATE_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          showMeListeners(socket, 'ready');
-          action.type = 'HANDLE_CONNECTION_CREATE_REJECTED';
-          action.payload.error = error.code;
-          next(action);
-        })
-      break;
-    }
-    case 'HANDLE_CONNECTION_CLOSE': {
-      handleConnectionClose(socket)
-        .then(data => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          action.type = 'HANDLE_CONNECTION_CLOSE_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          action.type = 'HANDLE_CONNECTION_CLOSE_REJECTED';
-          action.payload = error.code;
-          next(action);
-        })
-      break;
-    }
     case 'HANDLE_MOTOR_ENABLE': {
       handleMotorEnable(socket, action)
         .then(response => {

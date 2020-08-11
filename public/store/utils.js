@@ -1,3 +1,5 @@
+const log = require('electron-log');
+
 const pick = (state, windowStateKeys) => {
   return windowStateKeys
             .map(key => key in state ? {[key]: state[key]} : {})
@@ -5,10 +7,11 @@ const pick = (state, windowStateKeys) => {
 }
 
 const showMeListeners = (socket, event) => {
-  console.log(`${event.toUpperCase()} LISTENERS: ${socket.listeners(event)}`)
+  log.info(`${event.toUpperCase()} LISTENERS: ${socket.listeners(event)}`)
 }
 
 module.exports = {
   pick,
-  showMeListeners
+  showMeListeners,
+  log
 }

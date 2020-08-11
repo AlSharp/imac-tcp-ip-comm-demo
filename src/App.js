@@ -1,14 +1,12 @@
 import React, {Component} from 'react';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
 import MainWindow from './windows/mainWindow';
-import ConnectionWindow from './windows/connectionWindow';
 
 class App extends Component {
 
   static Views() {
     return {
-      main: <MainWindow />,
-      connectionWindow: <ConnectionWindow />
+      main: <MainWindow />
     }
   }
 

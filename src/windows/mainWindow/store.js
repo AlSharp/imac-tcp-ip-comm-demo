@@ -1,4 +1,4 @@
-import {createStore, applyMiddleware, compose, combineReducers} from 'redux';
+import {createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
 import electronMiddleware from '../middlewares/electron-renderer-middleware';
 import reducer from './reducer';

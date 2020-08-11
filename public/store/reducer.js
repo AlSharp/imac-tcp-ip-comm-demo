@@ -1,6 +1,9 @@
 module.exports = (state = {
   isConnected: false,
+  connectionType: '',
   connectionError: '',
+  comPorts: [],
+  comPort: '',
   port: '',
   ip: '',
   isMotorEnabled: [],
@@ -14,10 +17,11 @@ module.exports = (state = {
 }, action) => {
 
   switch(action.type) {
-    case 'HANDLE_CONNECTION_CREATE_SUCCEED': {
+    case 'HANDLE_IP_CONNECTION_CREATE_SUCCEED': {
       return {
         ...state,
         isConnected: true,
+        connectionType: 'ethernet',
         connectionError: '',
         port: action.payload.port,
         ip: action.payload.ip,
@@ -25,7 +29,7 @@ module.exports = (state = {
       };
     }
     
-    case 'HANDLE_CONNECTION_CREATE_REJECTED': {
+    case 'HANDLE_IP_CONNECTION_CREATE_REJECTED': {
       return {
         ...state,
         isConnected: false,
@@ -35,19 +39,27 @@ module.exports = (state = {
         status: 'Disconnected'
       }
     }
-    case 'HANDLE_CONNECTION_CLOSE_SUCCEED': {
+    case 'HANDLE_IP_CONNECTION_CLOSE_SUCCEED': {
       return {
         ...state,
         isConnected: false,
+        connectionType: '',
         status: 'Disconnected'
       }
     }
-    case 'HANDLE_CONNECTION_CLOSE_REJECTED': {
+    case 'HANDLE_IP_CONNECTION_CLOSE_REJECTED': {
       return {
         ...state,
         isConnected: false,
+        connectionType: '',
         connectionError: action.payload,
         status: 'Disconnected'
+      }
+    }
+    case 'HANDLE_USB_SERIAL_REFRESH_SUCCEED': {
+      return {
+        ...state,
+        comPorts: action.payload
       }
     }
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {

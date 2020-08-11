@@ -17,6 +17,52 @@ export const handleSharedStateUpdate = state => dispatch => {
   )
 }
 
+export const handleIPConnect = props => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_IP_CONNECTION_CREATE',
+      payload: props,
+      beingDispatchedFurther: true
+    }
+  )
+}
+
+export const handleIPDisconnect = () => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_IP_CONNECTION_CLOSE',
+      beingDispatchedFurther: true
+    }
+  )
+}
+
+export const handleIPChange = event => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_IP_CHANGE',
+      payload: event.target.value,
+      local: true
+    }
+  )
+}
+
+export const handleIPPortChange = event => dispatch => {
+  dispatch(
+    {
+      type: 'HANDLE_PORT_CHANGE',
+      payload: event.target.value,
+      local: true
+    }
+  )
+}
+
+export const handleUsbSerialRefresh = () => dispatch => {
+  dispatch({
+    type: 'HANDLE_USB_SERIAL_REFRESH',
+    beingDispatchedFurther: true
+  })
+}
+
 export const handleMotorEnable = event => (dispatch, getState) => {
   const axis = getState().shared.axis;
   dispatch(
@@ -140,27 +186,27 @@ export const handleJog = direction => (dispatch, getState) => {
   )
 }
 
-export const handleBaudRateSelect = event => (dispatch, getState) => {
-  const {ip, port} = getState().shared;
-  dispatch(
-    {
-      type: 'HANDLE_BAUD_RATE_CHANGE',
-      payload: {baudRate: event.target.value, ip, port},
-      beingDispatchedFurther: true
-    }
-  )
-}
+// export const handleBaudRateSelect = event => (dispatch, getState) => {
+//   const {ip, port} = getState().shared;
+//   dispatch(
+//     {
+//       type: 'HANDLE_BAUD_RATE_CHANGE',
+//       payload: {baudRate: event.target.value, ip, port},
+//       beingDispatchedFurther: true
+//     }
+//   )
+// }
 
-export const handleBreakCommandSend = () => (dispatch, getState) => {
-  const {ip, port} = getState().shared;
-  dispatch(
-    {
-      type: 'HANDLE_BREAK_COMMAND_SEND',
-      payload: {ip, port},
-      beingDispatchedFurther: true
-    }
-  )
-}
+// export const handleBreakCommandSend = () => (dispatch, getState) => {
+//   const {ip, port} = getState().shared;
+//   dispatch(
+//     {
+//       type: 'HANDLE_BREAK_COMMAND_SEND',
+//       payload: {ip, port},
+//       beingDispatchedFurther: true
+//     }
+//   )
+// }
 
 export const handleAxisChange = event => dispatch => {
   dispatch(

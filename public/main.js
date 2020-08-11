@@ -2,21 +2,23 @@ const electron = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const net = require('net');
-const commandPort = require('./ipserial/cmdport')();
+// const commandPort = require('./ipserial/cmdport')();
+const UsbSerial = require('./usbserial');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
-let connectionWindow;
 
 // socket passed to redux middleware, but can be used here as well.
 let socket = new net.Socket();
+
+const usbSerial = new UsbSerial();
 
 // stores windows
 const windowStore = require('./store/windowStore');
 
 // Initialize redux store
-const store = require('./store/store')(socket, commandPort, ipcMain, windowStore);
+require('./store/store')(socket, null, usbSerial, ipcMain, windowStore);
 
 app.on('ready', () => {
 
@@ -68,84 +70,11 @@ app.on('ready', () => {
   Menu.setApplicationMenu(mainMenu);
 })
 
-// handle create connection window
-
-const handleConnectionWindowOpen = () => {
-  connectionWindow = new BrowserWindow(
-    {
-      parent: mainWindow,
-      modal: true,
-      resizable: false,
-      minimizable: false,
-      maximizable: false,
-      skipTaskbar: true,
-      width: 232,
-      height: 154,
-      backgroundColor: '#F0F0F0',
-      title: 'Establish TCP connection',
-      webPreferences: {
-        nodeIntegration: true
-      },
-      name: 'connectionWindow'
-    }
-  );
-
-  // remove menu
-  connectionWindow.setMenu(null);
-
-  // Load html into window
-  connectionWindow.loadURL(isDev ?
-    'http://localhost:3000?connectionWindow' :
-    `file://${path.join(__dirname, '../build/index.html?connectionWindow')}`
-  );
-
-  connectionWindow.on('show', () => {
-    windowStore.dispatch(
-      {
-        type: 'WINDOW_ADD',
-        payload: {
-          id: connectionWindow.id,
-          name: connectionWindow.webContents.browserWindowOptions.name
-        }
-      }
-    )
-  });
-
-  // triggers show event
-  connectionWindow.show();
-
-  // Prevent title from changing
-  connectionWindow.on('page-title-updated', e => e.preventDefault());
-
-  // Garbage collection handle
-  connectionWindow.on('close', () => {
-    windowStore.dispatch(
-      {
-        type: 'WINDOW_REMOVE',
-        payload: 'connectionWindow'
-      }
-    )
-    connectionWindow = null;
-  })
-}
-
 // Create menu template
 const mainMenuTemplate = [
   {
     label: 'File',
     submenu: [
-      {
-        label: 'Connect',
-        click: () => handleConnectionWindowOpen()
-      },
-      {
-        label: 'Disconnect',
-        click: () => store.dispatch(
-          {
-            type: 'HANDLE_CONNECTION_CLOSE'
-          }
-        )
-      },
       {
         label: 'Quit',
         accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',

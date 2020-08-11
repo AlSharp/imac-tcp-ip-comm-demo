@@ -2,8 +2,6 @@ const {
   writeOne
 } = require('./tcpSocketAsyncActions');
 
-const {showMeListeners} = require('./utils');
-
 const nsio = (commandPort, func) => action => new Promise((resolve, reject) => {
   let code;
   code = commandPort.nsio_init();
