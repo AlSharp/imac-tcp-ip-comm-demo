@@ -1,5 +1,3 @@
-const {showMeListeners, log} = require('./utils');
-
 const writeOne = (socket, command) => {
   return new Promise((resolve, reject) => {
     let timeout;
@@ -12,7 +10,7 @@ const writeOne = (socket, command) => {
     responseHandler = res => {
       socket.removeListener('error', errorHandler);
       let response = res.toString('utf8');
-      log.info('RESPONSE: ', response);
+      console.log('RESPONSE: ', response);
       clearTimeout(timeout);
       if (response.slice(0, 1) === 'v') {
         resolve(response.slice(2));
@@ -40,8 +38,6 @@ const writeOne = (socket, command) => {
 const write = async (socket, commands) => {
   for (let i = 0; i < commands.length; i++) {
     await writeOne(socket, commands[i]);
-    showMeListeners(socket, 'data');
-    showMeListeners(socket, 'error');
   }
 }
 
@@ -114,8 +110,8 @@ handleIPConnectionClose = (socket) => {
     let err;
 
     const endHandler = () => {
-      log.info('SOCKET END');
-      log.info('AMOUNT OF BYTES WRITTEN ON END: ', socket.bytesWritten);
+      console.log('SOCKET END');
+      console.log('AMOUNT OF BYTES WRITTEN ON END: ', socket.bytesWritten);
     }
 
     const errorHandler = error => {

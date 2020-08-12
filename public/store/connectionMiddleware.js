@@ -7,23 +7,16 @@ const {
   handleUSBSerialConnectionCreate,
   handleUSBSerialConnectionClose
 } = require('./usbSerialAsyncActions');
-const {showMeListeners} = require('./utils');
 
 module.exports = (socket, usbSerial) => store => next => action => {
   switch(action.type) {
     case 'HANDLE_IP_CONNECTION_CREATE': {
       handleIPConnectionCreate(socket, action)
         .then(data => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          showMeListeners(socket, 'ready');
           action.type = 'HANDLE_IP_CONNECTION_CREATE_SUCCEED';
           next(action);
         })
         .catch(error => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
-          showMeListeners(socket, 'ready');
           action.type = 'HANDLE_IP_CONNECTION_CREATE_REJECTED';
           action.payload.error = error.code;
           next(action);
@@ -33,14 +26,10 @@ module.exports = (socket, usbSerial) => store => next => action => {
     case 'HANDLE_IP_CONNECTION_CLOSE': {
       handleIPConnectionClose(socket)
         .then(data => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
           action.type = 'HANDLE_IP_CONNECTION_CLOSE_SUCCEED';
           next(action);
         })
         .catch(error => {
-          showMeListeners(socket, 'error');
-          showMeListeners(socket, 'close');
           action.type = 'HANDLE_IP_CONNECTION_CLOSE_REJECTED';
           action.payload = error.code;
           next(action);
