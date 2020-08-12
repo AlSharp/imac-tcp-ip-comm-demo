@@ -30,7 +30,7 @@ module.exports = (socket, commandPort, usbSerial, ipcMain, windowStore) => {
       connectionMiddleware(socket),
       // cmdPortMiddleware(commandPort, socket),
       tcpSocketMiddleware(socket),
-      serialPortMiddleware(SerialPort)
+      serialPortMiddleware(usbSerial)
     )
   }
 

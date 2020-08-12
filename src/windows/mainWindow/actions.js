@@ -56,6 +56,14 @@ export const handleIPPortChange = event => dispatch => {
   )
 }
 
+export const handleComPortSelect = event => dispatch => {
+  dispatch({
+    type: 'HANDLE_COM_PORT_SELECT',
+    payload: event.target.value,
+    local: true
+  })
+}
+
 export const handleUsbSerialRefresh = () => dispatch => {
   dispatch({
     type: 'HANDLE_USB_SERIAL_REFRESH',
@@ -63,8 +71,24 @@ export const handleUsbSerialRefresh = () => dispatch => {
   })
 }
 
+export const handleUsbSerialConnect = () => (dispatch, getState) => {
+  const comPort = getState().shared.comPort;
+  dispatch({
+    type: 'HANDLE_USB_SERIAL_CONNECTION_CREATE',
+    payload: comPort,
+    beingDispatchedFurther: true
+  })
+}
+
+export const handleUsbSerialDisconnect = () => dispatch => {
+  dispatch({
+    type: 'HANDLE_USB_SERIAL_CONNECTION_CLOSE',
+    beingDispatchedFurther: true
+  })
+}
+
 export const handleMotorEnable = event => (dispatch, getState) => {
-  const axis = getState().shared.axis;
+  const {axis, connectionType} = getState().shared;
   dispatch(
     {
       type: 'HANDLE_MOTOR_ENABLE',
@@ -72,13 +96,14 @@ export const handleMotorEnable = event => (dispatch, getState) => {
         enabled: event.target.checked,
         axis: axis
       },
+      connectionType,
       beingDispatchedFurther: true
     }
   )
 }
 
 export const handleJogActivate = event => (dispatch, getState) => {
-  const axis = getState().shared.axis;
+  const {axis, connectionType} = getState().shared;
   dispatch(
     {
       type: 'HANDLE_JOG_ACTIVATE',
@@ -86,6 +111,7 @@ export const handleJogActivate = event => (dispatch, getState) => {
         activated: event.target.checked,
         axis: axis
       },
+      connectionType,
       beingDispatchedFurther: true
     }
   )
@@ -102,11 +128,14 @@ export const handleASCIICommandChange = event => dispatch => {
 }
 
 export const handleASCIICommandSubmit = event => (dispatch, getState) => {
+  const {connectionType} = getState().shared;
+  const {ASCIICommand} = getState().local;
   if (event.keyCode === 13) {
     dispatch(
       {
         type: 'HANDLE_ASCII_COMMAND_SUBMIT',
-        payload: getState().local.ASCIICommand,
+        payload: ASCIICommand,
+        connectionType,
         beingDispatchedFurther: true
       }
     )
@@ -134,6 +163,7 @@ export const handleParameterValueChange = (event, parameterName, validationFunct
 
 export const handleMoveButtonClick = () => (dispatch, getState) => {
   const {distance, distanceError} = getState().local;
+  const {connectionType} = getState().shared;
   const axis = getState().shared.axis
   if (distanceError || distance.length === 0) {
     return;
@@ -142,45 +172,31 @@ export const handleMoveButtonClick = () => (dispatch, getState) => {
     {
       type: 'HANDLE_DISTANCE_MOVE_EXECUTE',
       payload: {distance, axis},
+      connectionType,
       beingDispatchedFurther: true
     }
   )
 }
 
 export const handleMoveAbort = () => (dispatch, getState) => {
-  const axis = getState().shared.axis;
+  const {axis, connectionType} = getState().shared;
   dispatch(
     {
       type: 'HANDLE_MOVE_ABORT',
       payload: axis,
+      connectionType,
       beingDispatchedFurther: true
     }
   )
 }
 
 export const handleJog = direction => (dispatch, getState) => {
-  const {
-    velocity, acceleration, deceleration,
-    areJogParamsUpdated,
-    velocityError, accelerationError, decelerationError
-  } = getState().local;
-  const axis = getState().shared.axis;
-  if (velocityError || accelerationError || decelerationError) {
-    return;
-  }
-  if (velocity.length === 0 || acceleration.length === 0 || deceleration.length === 0) {
-    return;
-  }
-  const payload = areJogParamsUpdated ?
-  {
-    velocity, acceleration, deceleration
-  } : undefined
+  const {axis, connectionType} = getState().shared;
   dispatch(
     {
       type: 'HANDLE_JOG',
-      payload,
-      direction,
-      axis,
+      payload: {axis, direction},
+      connectionType,
       beingDispatchedFurther: true
     }
   )
@@ -208,11 +224,13 @@ export const handleJog = direction => (dispatch, getState) => {
 //   )
 // }
 
-export const handleAxisChange = event => dispatch => {
+export const handleAxisChange = event => (dispatch, getState) => {
+  const {connectionType} = getState().shared;
   dispatch(
     {
       type: 'HANDLE_AXIS_CHANGE',
       payload: event.target.value,
+      connectionType,
       beingDispatchedFurther: true
     }
   )

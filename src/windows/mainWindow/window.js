@@ -10,6 +10,9 @@ import {
   handleIPChange,
   handleIPPortChange,
   handleUsbSerialRefresh,
+  handleUsbSerialConnect,
+  handleUsbSerialDisconnect,
+  handleComPortSelect,
   handleMotorEnable,
   handleJogActivate,
   handleASCIICommandChange,
@@ -49,6 +52,7 @@ const ConnectionMethods = styled.div`
 
 const EthernetGroupBox = ({
   isConnected,
+  disabled,
   port, ip,
   handleIPChange,
   handleIPPortChange,
@@ -63,8 +67,11 @@ const EthernetGroupBox = ({
   }
   return(
     <Div width="200px">
-      <FieldSet width="200px">
-        <Legend>
+      <FieldSet
+        isConnected={isConnected}
+        disabled={disabled}
+      >
+        <Legend disabled={disabled}>
           Ethernet
         </Legend>
         <Div padding="5px 15px 8px 15px">
@@ -110,19 +117,25 @@ const EthernetGroupBox = ({
   )
 }
 
-const _ComPorts = ({className, comPorts}) => {
+const _ComPorts = ({className, comPorts, comPort, onChange}) => {
   return(
     <div className={className}>
-      <select size="3">
+      <select
+        size="3"
+        value={comPort}
+        onChange={onChange}
+      >
         {
           comPorts.map(port =>
             <option
+              value={port.path}
               key={port.serialNumber}
             >
               {port.path}
             </option>  
           )
         }
+        <option value='' key='empty'></option>
       </select>
     </div>
   )
@@ -139,18 +152,28 @@ const ComPorts = styled(_ComPorts)`
 
 const COMGroupBox = ({
   isConnected,
+  disabled,
   comPorts,
-  handleUsbSerialRefresh
+  comPort,
+  handleUsbSerialRefresh,
+  handleComPortSelect,
+  handleUsbSerialConnect,
+  handleUsbSerialDisconnect
 }) => {
   return(
     <Div width="200px">
-      <FieldSet width="200px">
-        <Legend>
-          COM port
+      <FieldSet width="200px"
+        isConnected={isConnected}
+        disabled={disabled}
+      >
+        <Legend disabled={disabled}>
+          USB-to-Serial
         </Legend>
         <Div padding="5px 15px 8px 15px">
           <ComPorts
             comPorts={comPorts}
+            comPort={comPort}
+            onChange={handleComPortSelect}
           />
           <ButtonDiv align="right">
             {
@@ -166,10 +189,17 @@ const COMGroupBox = ({
             }
             {
               !isConnected ?
-              <Button type="submit" width="70px">Connect</Button> :
+              <Button
+                type="submit"
+                width="70px"
+                disabled={!comPort.length}
+                onClick={handleUsbSerialConnect}
+              >
+                Connect
+              </Button> :
               <Button
                 type="button"
-                onClick={handleIPDisconnect}
+                onClick={handleUsbSerialDisconnect}
               >
                 Disconnect
               </Button>
@@ -199,12 +229,13 @@ const FieldSet = styled.fieldset`
   margin: 0;
   border-style: solid;
   border-width: 1px;
-  border-color: #BFBFBF;
+  border-color: ${props => props.isConnected ? '#5f8e78' : '#BFBFBF'};
   border-radius: 3px;
 `;
 
 const Legend = styled.legend`
   font-size: 12px;
+  color: ${props => props.disabled ? 'graytext' : 'inherit'};
   margin-left: 12px;
 `;
 
@@ -411,8 +442,10 @@ class Window extends Component {
     const {
       stateReceived,
       isConnected,
+      connectionType,
       connectionError,
       comPorts,
+      comPort,
       port, ip,
       isMotorEnabled,
       isJogActivated,
@@ -433,6 +466,9 @@ class Window extends Component {
       handleIPConnect,
       handleIPDisconnect,
       handleUsbSerialRefresh,
+      handleUsbSerialConnect,
+      handleUsbSerialDisconnect,
+      handleComPortSelect,
       handleMotorEnable,
       handleJogActivate,
       handleASCIICommandChange,
@@ -448,7 +484,8 @@ class Window extends Component {
       <Div width="458px">
         <ConnectionMethods>
           <EthernetGroupBox
-            isConnected={isConnected}
+            isConnected={isConnected && connectionType === 'ethernet'}
+            disabled={connectionType !== 'ethernet' && connectionType.length}
             connectionError={connectionError}
             port={port}
             ip={ip}
@@ -458,10 +495,15 @@ class Window extends Component {
             handleIPDisconnect={handleIPDisconnect}
           />
           <COMGroupBox
-            isConnected={isConnected}
+            isConnected={isConnected && connectionType === 'usbserial'}
+            disabled={connectionType !== 'usbserial' && connectionType.length}
             connectionError={connectionError}
             comPorts={comPorts}
+            comPort={comPort}
             handleUsbSerialRefresh={handleUsbSerialRefresh}
+            handleComPortSelect={handleComPortSelect}
+            handleUsbSerialConnect={handleUsbSerialConnect}
+            handleUsbSerialDisconnect={handleUsbSerialDisconnect}
           />
         </ConnectionMethods>
         <Row padding="7px 122px 0px 20px">
@@ -562,8 +604,10 @@ const mapStateToProps = state => {
   return {
     stateReceived: state.local.stateReceived,
     isConnected: state.shared.isConnected,
+    connectionType: state.shared.connectionType,
     connectionError: state.shared.connectionError,
     comPorts: state.shared.comPorts,
+    comPort: state.shared.comPort,
     ip: state.shared.ip,
     port: state.shared.port,
     isMotorEnabled: state.shared.isMotorEnabled,
@@ -594,6 +638,9 @@ export default connect(
     handleIPChange,
     handleIPPortChange,
     handleUsbSerialRefresh,
+    handleUsbSerialConnect,
+    handleUsbSerialDisconnect,
+    handleComPortSelect,
     handleMotorEnable,
     handleJogActivate,
     handleASCIICommandChange,

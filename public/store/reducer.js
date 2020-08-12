@@ -33,6 +33,7 @@ module.exports = (state = {
       return {
         ...state,
         isConnected: false,
+        connectionType: '',
         connectionError: action.payload.error,
         port: action.payload.port,
         ip: action.payload.ip,
@@ -62,6 +63,42 @@ module.exports = (state = {
         comPorts: action.payload
       }
     }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED': {
+      return {
+        ...state,
+        isConnected: true,
+        connectionType: 'usbserial',
+        connectionError: '',
+        comPort: action.payload,
+        status: `Connected to ${action.payload}`
+      }
+    }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_REJECTED': {
+      return {
+        ...state,
+        isConnected: false,
+        connectionType: '',
+        connectionError: action.payload.error,
+        status: 'Disconnected'
+      }
+    }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CLOSE_SUCCEED': {
+      return {
+        ...state,
+        isConnected: false,
+        connectionType: '',
+        status: 'Disconnected'
+      }
+    }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CLOSE_REJECTED': {
+      return {
+        ...state,
+        isConnected: false,
+        connectionType: '',
+        connectionError: action.payload,
+        status: 'Disconnected'
+      }
+    }
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
       return {
         ...state,
@@ -72,7 +109,7 @@ module.exports = (state = {
         state.isJogActivated.concat(action.payload.axis) :
         state.isJogActivated.filter(axis => axis !== action.payload.axis),
         motorResponse: '',
-        status: action.payload ? 'Motor enabled' : 'Motor disabled'
+        status: action.payload.enabled ? 'Motor enabled' : 'Motor disabled'
       }
     }
     case 'HANDLE_MOTOR_ENABLE_REJECTED': {

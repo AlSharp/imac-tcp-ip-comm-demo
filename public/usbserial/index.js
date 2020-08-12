@@ -31,7 +31,7 @@ module.exports = class UsbSerial {
   }
 
   destroy() {
-    return Promise(resolve => {
+    return new Promise(resolve => {
       this.port.close(() => {
         this.port = null;
         this.parser = null;
@@ -79,10 +79,14 @@ module.exports = class UsbSerial {
           return reject(error);
         }
 
-        return response;
+        return resolve(response);
       }
 
-      this.port.write(this.toAscii(`${axis} ${data}`));
+      if (axis) {
+        this.port.write(this.toAscii(`${axis} ${data}`));
+      } else {
+        this.port.write(this.toAscii(data));
+      }
 
       this.parser.once('data', handler);
     })

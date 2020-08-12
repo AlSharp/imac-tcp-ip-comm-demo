@@ -45,7 +45,7 @@ const write = async (socket, commands) => {
   }
 }
 
-const handleConnectionCreate = (socket, action) => {
+const handleIPConnectionCreate = (socket, action) => {
   return new Promise((resolve, reject) => {
     const {ip, port} = action.payload;
 
@@ -105,7 +105,7 @@ const handleConnectionCreate = (socket, action) => {
   })
 }
 
-handleConnectionClose = (socket) => {
+handleIPConnectionClose = (socket) => {
   return new Promise((resolve, reject) => {
     // remove handleTCPConnectionError listener, so we can add
     // error event listener appropriate for connection closing routine
@@ -140,60 +140,76 @@ handleConnectionClose = (socket) => {
   })
 }
 
-const handleMotorEnable = (socket, action) => {
-  let command = action.payload.enabled ?
-    `${action.payload.axis} s r0x70 2 0` :
-    `${action.payload.axis} s r0x70 258 0`;
-  // let command = action.payload ?
-  //   's r0x70 258 0\r' :
-  //   's r0x70 2 0\r';
-  return writeOne(socket, command);
+const handleMotorEnable = async (socket, action) => {
+  try {
+    const command = action.payload.enabled ?
+      `${action.payload.axis} s r0x70 2 0` :
+      `${action.payload.axis} s r0x70 258 0`;
+    const res = await writeOne(socket, command);
+    return res;
+  }
+  catch(error) {
+    throw error;
+  }
 }
 
-const handleASCIICommandSend = (socket, action) =>
-  writeOne(socket, action.payload);
+const handleASCIICommandSend = async (socket, action) => {
+  try {
+    const res = await writeOne(socket, action.payload);
+    return res;
+  }
+  catch(error) {
+    throw error;
+  }
+}
+  
 
-const handleDistanceMoveExecute = (socket, action) => {
-  const {axis, distance} = action.payload;
-  let commands = [
-    `${axis} s r0xc8 256`,
-    `${axis} s r0xca ${distance}`,
-    `${axis} t 1`
-  ];
-  return write(socket, commands);
+const handleDistanceMoveExecute = async (socket, action) => {
+  try {
+    const {axis, distance} = action.payload;
+    let commands = [
+      `${axis} s r0xc8 256`,
+      `${axis} s r0xca ${distance}`,
+      `${axis} t 1`
+    ];
+    const res = await write(socket, commands);
+    return res;
+  }
+  catch(error) {
+    throw error;
+  }
 }
 
-const handleJog = (socket, action) => {
-  let commands;
-  if(action.payload) {
-    const {
-      axis,
-      direction,
-      payload: {velocity, acceleration, deceleration} 
-    } = action;
-    commands = [
+const handleJog = async (socket, action) => {
+  try {
+    const {axis, direction} = action.payload;
+    const commands = [
       `${axis} s r0xc8 2`,
       `${axis} s r0xca ${direction === 'positive' ? '1' : '-1'}`,
-      `${axis} s r0xcb ${velocity}`,
-      `${axis} s r0xcc ${acceleration}`,
-      `${axis} s r0xcd ${deceleration}`,
-      `${axis} s r0xcf ${deceleration}`,
       `${axis} t 1`
     ]
-  } else {
-    commands = [` ${action.axis} t 1`];
+    const res = await write(socket, commands);
+    return res;
   }
-  return write(socket, commands);
+  catch(error) {
+    throw error;
+  }
 }
 
-const handleMoveAbort = (socket, action) =>
-  writeOne(socket, `${action.payload} t 0`);
+const handleMoveAbort = async (socket, action) => {
+  try {
+    await writeOne(socket, `${action.payload} t 0`);
+  }
+  catch(error) {
+    throw error;
+  }
+}
 
 
 module.exports ={
   writeOne,
-  handleConnectionCreate,
-  handleConnectionClose,
+  handleIPConnectionCreate,
+  handleIPConnectionClose,
   handleMotorEnable,
   handleASCIICommandSend,
   handleDistanceMoveExecute,

@@ -66,9 +66,10 @@ const shared = (state = {
   comPort: '',
   port: '',
   ip: '',
-  isMotorEnabled: false,
-  isJogActivated: false,
+  isMotorEnabled: [],
+  isJogActivated: [],
   isJogging: false,
+  isMoving: false,
   motorResponse: '',
   baudRate: '9600',
   status: '',
@@ -98,6 +99,12 @@ const shared = (state = {
       return {
         ...state,
         ip: action.payload
+      }
+    }
+    case 'HANDLE_COM_PORT_SELECT': {
+      return {
+        ...state,
+        comPort: action.payload
       }
     }
 

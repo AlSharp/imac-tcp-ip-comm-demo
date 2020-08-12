@@ -1,5 +1,96 @@
-const {log} = require('./utils');
+const {
+  handleMotorEnable,
+  handleASCIICommandSend,
+  handleDistanceMoveExecute,
+  handleJog,
+  handleMoveAbort
+} = require('./usbSerialAsyncActions');
 
-module.exports = SerialPort => store => next => action => {
-  next(action);
+module.exports = usbSerial => store => next => action => {
+  if (action.connectionType === 'usbserial') {
+    switch(action.type) {
+      case 'HANDLE_MOTOR_ENABLE': {
+        handleMotorEnable(usbSerial, action)
+          .then(response => {
+            action.type = 'HANDLE_MOTOR_ENABLE_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            // Do I need to show dialog message box with an error?
+            // dialog.showErrorBox(title, content) 
+            action.type = 'HANDLE_MOTOR_ENABLE_REJECTED';
+            next(action);
+          })
+        break;
+      }
+      case 'HANDLE_ASCII_COMMAND_SUBMIT': {
+        handleASCIICommandSend(usbSerial, action)
+          .then(response => {
+            action.type = 'HANDLE_ASCII_COMMAND_SUBMIT_SUCCEED';
+            action.payload = response;
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_ASCII_COMMAND_SUBMIT_REJECTED';
+            action.payload = error;
+            next(action);
+          })
+        break;
+      }
+      case 'HANDLE_DISTANCE_MOVE_EXECUTE': {
+        handleDistanceMoveExecute(usbSerial, action)
+        .then(response => {
+          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
+          next(action);
+        })
+        break;
+      }
+      case 'HANDLE_JOG': {
+        handleJog(usbSerial, action)
+          .then(response => {
+            action.type = 'HANDLE_JOG_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_JOG_REJECTED';
+            next(action);
+          })
+          break;
+      }
+      case 'HANDLE_MOVE_ABORT': {
+        handleMoveAbort(usbSerial, action)
+        .then(response => {
+          action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+          next(action);
+        })
+        break;
+      }
+      case 'HANDLE_JOG_ABORT': {
+        handleMoveAbort(usbSerial, action)
+        .then(response => {
+          action.type = 'HANDLE_JOG_ABORT_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          action.type = 'HANDLE_JOG_ABORT_REJECTED';
+          next(action);
+        })
+        break;
+      }
+  
+  
+      default:
+        next(action);
+    }
+  } else {
+    next(action);
+  }
 }

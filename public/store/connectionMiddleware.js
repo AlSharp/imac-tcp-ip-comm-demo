@@ -1,16 +1,18 @@
 const {
-  handleConnectionCreate,
-  handleConnectionClose,
+  handleIPConnectionCreate,
+  handleIPConnectionClose,
 } = require('./tcpSocketAsyncActions');
 const {
-  handleUSBSerialRefresh
+  handleUSBSerialRefresh,
+  handleUSBSerialConnectionCreate,
+  handleUSBSerialConnectionClose
 } = require('./usbSerialAsyncActions');
 const {showMeListeners} = require('./utils');
 
 module.exports = (socket, usbSerial) => store => next => action => {
   switch(action.type) {
     case 'HANDLE_IP_CONNECTION_CREATE': {
-      handleConnectionCreate(socket, action)
+      handleIPConnectionCreate(socket, action)
         .then(data => {
           showMeListeners(socket, 'error');
           showMeListeners(socket, 'close');
@@ -29,7 +31,7 @@ module.exports = (socket, usbSerial) => store => next => action => {
       break;
     }
     case 'HANDLE_IP_CONNECTION_CLOSE': {
-      handleConnectionClose(socket)
+      handleIPConnectionClose(socket)
         .then(data => {
           showMeListeners(socket, 'error');
           showMeListeners(socket, 'close');
@@ -54,6 +56,32 @@ module.exports = (socket, usbSerial) => store => next => action => {
         })
         .catch(error => {
           action.type = 'HANDLE_USB_SERIAL_REFRESH_REJECTED';
+          action.payload = error;
+          next(action);
+        })
+      break;
+    }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CREATE': {
+      handleUSBSerialConnectionCreate(usbSerial, action)
+        .then(data => {
+          action.type = 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          action.type = 'HANDLE_USB_SERIAL_CONNECTION_CREATE_REJECTED';
+          action.payload = error;
+          next(action);
+        })
+      break;
+    }
+    case 'HANDLE_USB_SERIAL_CONNECTION_CLOSE': {
+      handleUSBSerialConnectionClose(usbSerial)
+        .then(data => {
+          action.type = 'HANDLE_USB_SERIAL_CONNECTION_CLOSE_SUCCEED';
+          next(action);
+        })
+        .catch(error => {
+          action.type = 'HANDLE_USB_SERIAL_CONNECTION_CLOSE_REJECTED';
           action.payload = error;
           next(action);
         })
