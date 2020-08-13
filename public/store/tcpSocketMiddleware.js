@@ -3,7 +3,8 @@ const {
   handleASCIICommandSend,
   handleDistanceMoveExecute,
   handleJog,
-  handleMoveAbort
+  handleMoveAbort,
+  handleHome
 } = require('./tcpSocketAsyncActions');
 
 module.exports = socket => store => next => action => {
@@ -39,14 +40,14 @@ module.exports = socket => store => next => action => {
       }
       case 'HANDLE_DISTANCE_MOVE_EXECUTE': {
         handleDistanceMoveExecute(socket, action)
-        .then(response => {
-          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
-          next(action);
-        })
+          .then(response => {
+            action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
+            next(action);
+          })
         break;
       }
       case 'HANDLE_JOG': {
@@ -59,33 +60,44 @@ module.exports = socket => store => next => action => {
             action.type = 'HANDLE_JOG_REJECTED';
             next(action);
           })
-          break;
+        break;
       }
       case 'HANDLE_MOVE_ABORT': {
         handleMoveAbort(socket, action)
-        .then(response => {
-          action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_MOVE_ABORT_REJECTED';
-          next(action);
-        })
+          .then(response => {
+            action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+            next(action);
+          })
         break;
       }
       case 'HANDLE_JOG_ABORT': {
         handleMoveAbort(socket, action)
-        .then(response => {
-          action.type = 'HANDLE_JOG_ABORT_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_JOG_ABORT_REJECTED';
-          next(action);
-        })
+          .then(response => {
+            action.type = 'HANDLE_JOG_ABORT_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_JOG_ABORT_REJECTED';
+            next(action);
+          })
         break;
       }
-  
+      case 'HANDLE_HOME': {
+        handleHome(socket, action)
+          .then(response => {
+            action.type = 'HANDLE_HOME_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_HOME_REJECTED';
+            next(action);
+          })
+        break;
+      }
   
       default:
         next(action);

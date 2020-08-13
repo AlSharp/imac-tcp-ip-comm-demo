@@ -21,7 +21,8 @@ import {
   handleMoveButtonClick,
   handleMoveAbort,
   handleJog,
-  handleAxisChange
+  handleAxisChange,
+  handleHome
 } from './actions';
 
 const Div = styled.div`
@@ -192,6 +193,7 @@ const COMGroupBox = ({
               <Button
                 type="submit"
                 width="70px"
+                margin="0 0 0 28px"
                 disabled={!comPort.length}
                 onClick={handleUsbSerialConnect}
               >
@@ -215,7 +217,7 @@ const ActivateJogDiv = styled.div`
   display: inline-block;
   position: absolute;
   top: 175px;
-  left: 28px;
+  left: 259px;
   width: 150px;
 `;
 
@@ -322,32 +324,70 @@ const shouldBeInteger = value => {
     undefined : 'Should be integer';
 }
 
+const GroupBoxContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 15px;
+`;
+
+const HomeGroupBox = ({
+  disabled,
+  isMoving,
+  handleHome, handleMoveAbort
+}) =>
+  <Div width="200px">
+    <FieldSet disabled={disabled}>
+      <Legend>
+        Home
+      </Legend>
+      <Row padding="24px 15px 24px 15px">
+        <Button
+          width="70px"
+          margin="0"
+          onClick={handleHome}
+          disabled={isMoving}
+        >
+          Home
+        </Button>
+        <Button
+          width="70px"
+          margin="0"
+          onClick={handleMoveAbort}
+        >
+          Abort
+        </Button>
+      </Row>
+    </FieldSet>
+  </Div>
+
 const JogGroupBox = props =>
-  <GroupBoxDiv>
+  <Div width="200px">
     <FieldSet disabled={props.disabled}>
       <Legend>
         Jog
       </Legend>
-      <Row padding="5px 15px">
-        <ButtonDiv margin="0 0 4px 215px">
-          <Button
-            width="70px"
-            onMouseDown={e => props.handleJog('positive')}
-            onMouseUp={props.handleMoveAbort}
-          >
-            Positive
-          </Button>
-          <Button
-            width="70px"
-            onMouseDown={e => props.handleJog('negative')}
-            onMouseUp={props.handleMoveAbort}
-          >
-            Negative
-          </Button>
-        </ButtonDiv>
+      <Row padding="40px 15px 8px 15px">
+        <Button
+          width="70px"
+          margin="0"
+          onMouseDown={e => props.handleJog('positive')}
+          onMouseLeave={props.handleMoveAbort}
+          onMouseUp={props.handleMoveAbort}
+        >
+          Positive
+        </Button>
+        <Button
+          width="70px"
+          margin="0"
+          onMouseDown={e => props.handleJog('negative')}
+          onMouseLeave={props.handleMoveAbort}
+          onMouseUp={props.handleMoveAbort}
+        >
+          Negative
+        </Button>
       </Row>
     </FieldSet>
-  </GroupBoxDiv>
+  </Div>
 
 const MoveGroupBox = props =>
   <GroupBoxDiv>
@@ -378,12 +418,15 @@ const MoveGroupBox = props =>
         <ButtonDiv>
           <Button
             width="70px"
+            margin="0 28px 0 0"
             onClick={props.handleMoveButtonClick}
+            disabled={props.isMoving}
           >
             Move
           </Button>
           <Button
             width="70px"
+            margin="0"
             onClick={props.handleMoveAbort}
           >
             Abort
@@ -449,6 +492,7 @@ class Window extends Component {
       port, ip,
       isMotorEnabled,
       isJogActivated,
+      isMoving,
       ASCIICommand,
       motorResponse,
       velocity,
@@ -477,7 +521,8 @@ class Window extends Component {
       handleMoveButtonClick,
       handleMoveAbort,
       handleJog,
-      handleAxisChange
+      handleAxisChange,
+      handleHome
     } = this.props;
     return (
       stateReceived ?
@@ -506,30 +551,30 @@ class Window extends Component {
             handleUsbSerialDisconnect={handleUsbSerialDisconnect}
           />
         </ConnectionMethods>
-        <Row padding="7px 122px 0px 20px">
+        <Row padding="7px 30px 0px 20px">
           <Div>
             <InputField>
-            <Label
-              width="165px"
-              onClick={e => e.preventDefault()}
-            >
-              <CheckboxInput
-                type="checkbox"
-                id="enable"
-                marginLeft="10px"
-                disabled={!isConnected}
-                checked={isMotorEnabled.includes(axis)}
-                onChange={handleMotorEnable}
-              />Enable motor
-            </Label>
+              <Label
+                width="100px"
+                onClick={e => e.preventDefault()}
+              >
+                <CheckboxInput
+                  type="checkbox"
+                  id="enable"
+                  marginLeft="10px"
+                  disabled={!isConnected}
+                  checked={isMotorEnabled.includes(axis)}
+                  onChange={handleMotorEnable}
+                />Enable motor
+              </Label>
             </InputField>
           </Div>
           <Div>
             <InputField>
               <Label
-                width="60px"
+                width="30px"
               >
-                Axis
+                Axis:
               </Label>
               <SelectboxInput
                 width="70px"
@@ -560,20 +605,29 @@ class Window extends Component {
             </Label>
           </InputField>
         </ActivateJogDiv>
-        <JogGroupBox
-          disabled={!isConnected || !isMotorEnabled.includes(axis) || !isJogActivated.includes(axis)}
-          velocity={velocity}
-          velocityError={velocityError}
-          acceleration={acceleration}
-          accelerationError={accelerationError}
-          deceleration={deceleration}
-          decelerationError={decelerationError}
-          handleParameterValueChange={handleParameterValueChange}
-          handleJog={handleJog}
-          handleMoveAbort={handleMoveAbort}
-        />
+        <GroupBoxContainer>
+          <HomeGroupBox
+            disabled={!isConnected || !isMotorEnabled.includes(axis) || isJogActivated.includes(axis)}
+            isMoving={isMoving}
+            handleHome={handleHome}
+            handleMoveAbort={handleMoveAbort}
+          />
+          <JogGroupBox
+            disabled={!isConnected || !isMotorEnabled.includes(axis) || !isJogActivated.includes(axis)}
+            velocity={velocity}
+            velocityError={velocityError}
+            acceleration={acceleration}
+            accelerationError={accelerationError}
+            deceleration={deceleration}
+            decelerationError={decelerationError}
+            handleParameterValueChange={handleParameterValueChange}
+            handleJog={handleJog}
+            handleMoveAbort={handleMoveAbort}
+          />
+        </GroupBoxContainer>
         <MoveGroupBox
           disabled={!isConnected || !isMotorEnabled.includes(axis) || isJogActivated.includes(axis)}
+          isMoving={isMoving}
           distance={distance}
           distanceError={distanceError}
           handleParameterValueChange={handleParameterValueChange}
@@ -612,6 +666,7 @@ const mapStateToProps = state => {
     port: state.shared.port,
     isMotorEnabled: state.shared.isMotorEnabled,
     isJogActivated: state.shared.isJogActivated,
+    isMoving: state.shared.isMoving,
     ASCIICommand: state.local.ASCIICommand,
     motorResponse: state.shared.motorResponse,
     velocity: state.local.velocity,
@@ -649,6 +704,7 @@ export default connect(
     handleMoveButtonClick,
     handleMoveAbort,
     handleJog,
-    handleAxisChange
+    handleAxisChange,
+    handleHome
   }
 )(Window);

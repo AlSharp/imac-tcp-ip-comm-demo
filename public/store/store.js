@@ -27,7 +27,7 @@ module.exports = (socket, commandPort, usbSerial, ipcMain, windowStore) => {
   } else {
     middlewareEnhancer = applyMiddleware(
       thunk,
-      connectionMiddleware(socket),
+      connectionMiddleware(socket, usbSerial),
       // cmdPortMiddleware(commandPort, socket),
       tcpSocketMiddleware(socket),
       serialPortMiddleware(usbSerial)

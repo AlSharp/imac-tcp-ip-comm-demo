@@ -201,6 +201,15 @@ const handleMoveAbort = async (socket, action) => {
   }
 }
 
+const handleHome = async (socket, action) => {
+  try {
+    await writeOne(socket, `${action.payload} t 2`);
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 
 module.exports ={
   writeOne,
@@ -210,5 +219,6 @@ module.exports ={
   handleASCIICommandSend,
   handleDistanceMoveExecute,
   handleJog,
-  handleMoveAbort
+  handleMoveAbort,
+  handleHome
 }

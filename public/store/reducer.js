@@ -146,6 +146,20 @@ module.exports = (state = {
         status: 'Move failed'
       }
     }
+    case 'HANDLE_HOME_SUCCEED': {
+      return {
+        ...state,
+        isMoving: true,
+        status: 'Homing'
+      }
+    }
+    case 'HANDLE_HOME_REJECTED': {
+      return {
+        ...state,
+        isMoving: false,
+        status: 'Home failed'
+      }
+    }
     case 'HANDLE_MOVE_ABORT_SUCCEED': {
       return {
         ...state,

@@ -3,7 +3,8 @@ const {
   handleASCIICommandSend,
   handleDistanceMoveExecute,
   handleJog,
-  handleMoveAbort
+  handleMoveAbort,
+  handleHome
 } = require('./usbSerialAsyncActions');
 
 module.exports = usbSerial => store => next => action => {
@@ -85,7 +86,18 @@ module.exports = usbSerial => store => next => action => {
         })
         break;
       }
-  
+      case 'HANDLE_HOME': {
+        handleHome(usbSerial, action)
+          .then(response => {
+            action.type = 'HANDLE_HOME_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_HOME_REJECTED';
+            next(action);
+          })
+        break;
+      }
   
       default:
         next(action);

@@ -235,3 +235,13 @@ export const handleAxisChange = event => (dispatch, getState) => {
     }
   )
 }
+
+export const handleHome = () => (dispatch, getState) => {
+  const {axis, connectionType} = getState().shared;
+  dispatch({
+    type: 'HANDLE_HOME',
+    payload: axis,
+    connectionType,
+    beingDispatchedFurther: true
+  })
+}

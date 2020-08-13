@@ -93,6 +93,15 @@ const handleMoveAbort = async (usbSerial, action) => {
   }
 }
 
+const handleHome = async (usbSerial, action) => {
+  try {
+    await usbSerial.write(`${action.payload} t 2`);
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 module.exports = {
   handleUSBSerialRefresh,
   handleUSBSerialConnectionCreate,
@@ -101,5 +110,6 @@ module.exports = {
   handleASCIICommandSend,
   handleDistanceMoveExecute,
   handleJog,
-  handleMoveAbort
+  handleMoveAbort,
+  handleHome
 }
