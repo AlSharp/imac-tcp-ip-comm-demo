@@ -10,7 +10,7 @@ const handleUSBSerialRefresh = async usbSerial => {
 
 const handleUSBSerialConnectionCreate = async (usbSerial, action) => {
   try {
-    const comPort = action.payload;
+    const {comPort} = action.payload;
     await usbSerial.create(comPort);
   }
   catch(error) {
@@ -61,6 +61,8 @@ const handleDistanceMoveExecute = async (usbSerial, action) => {
     for (const command of commands) {
       await usbSerial.write(command);
     }
+
+    usbSerial.startPolling(axis);
   }
   catch(error) {
     throw error;
@@ -96,6 +98,7 @@ const handleMoveAbort = async (usbSerial, action) => {
 const handleHome = async (usbSerial, action) => {
   try {
     await usbSerial.write(`${action.payload} t 2`);
+    usbSerial.startPolling(action.payload);
   }
   catch(error) {
     throw error;

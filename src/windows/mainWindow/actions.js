@@ -75,7 +75,7 @@ export const handleUsbSerialConnect = () => (dispatch, getState) => {
   const comPort = getState().shared.comPort;
   dispatch({
     type: 'HANDLE_USB_SERIAL_CONNECTION_CREATE',
-    payload: comPort,
+    payload: {comPort},
     beingDispatchedFurther: true
   })
 }

@@ -1,8 +1,9 @@
 const electron = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
-const net = require('net');
+
 // const commandPort = require('./ipserial/cmdport')();
+const IpSerial = require('./ipserial');
 const UsbSerial = require('./usbserial');
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
@@ -10,7 +11,7 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 let mainWindow;
 
 // socket passed to redux middleware, but can be used here as well.
-let socket = new net.Socket();
+const ipSerial = new IpSerial();
 
 const usbSerial = new UsbSerial();
 
@@ -18,7 +19,7 @@ const usbSerial = new UsbSerial();
 const windowStore = require('./store/windowStore');
 
 // Initialize redux store
-require('./store/store')(socket, null, usbSerial, ipcMain, windowStore);
+require('./store/store')(ipSerial, null, usbSerial, ipcMain, windowStore);
 
 app.on('ready', () => {
 
@@ -28,7 +29,7 @@ app.on('ready', () => {
       title: 'IMAC Motion Server Client',
       resizable: true,
       width: 474,
-      height: 462,
+      height: 485,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true

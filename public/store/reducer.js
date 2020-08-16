@@ -6,26 +6,32 @@ module.exports = (state = {
   comPort: '',
   port: '',
   ip: '',
-  isMotorEnabled: [],
-  isJogActivated: [],
-  isJogging: false,
-  isMoving: false,
+  axis: '',
+  axes: [],
   motorResponse: '',
-  baudRate: '9600',
-  status: '',
-  axis: '0'
+  status: ''
 }, action) => {
 
   switch(action.type) {
     case 'HANDLE_IP_CONNECTION_CREATE_SUCCEED': {
+      const {ip, port, axes} = action.payload;
       return {
         ...state,
         isConnected: true,
         connectionType: 'ethernet',
         connectionError: '',
-        port: action.payload.port,
-        ip: action.payload.ip,
-        status: `Connected to ${action.payload.ip}:${action.payload.port}`
+        port,
+        ip,
+        status: `Connected to ${ip}:${port}`,
+        axes: axes.map(axis => (
+          {
+            number: axis,
+            isMotorEnabled: false,
+            isJogActivated: false,
+            inMotion: false
+          }
+        )),
+        axis: axes[0] || ''
       };
     }
     
@@ -45,7 +51,9 @@ module.exports = (state = {
         ...state,
         isConnected: false,
         connectionType: '',
-        status: 'Disconnected'
+        status: 'Disconnected',
+        axes: [],
+        axis: ''
       }
     }
     case 'HANDLE_IP_CONNECTION_CLOSE_REJECTED': {
@@ -64,13 +72,23 @@ module.exports = (state = {
       }
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED': {
+      const {comPort, axes} = action.payload;
       return {
         ...state,
         isConnected: true,
         connectionType: 'usbserial',
         connectionError: '',
-        comPort: action.payload,
-        status: `Connected to ${action.payload}`
+        comPort: comPort,
+        status: `Connected to ${comPort}`,
+        axes: axes.map(axis => (
+          {
+            number: axis,
+            isMotorEnabled: false,
+            isJogActivated: false,
+            inMotion: false
+          }
+        )),
+        axis: axes[0] || ''
       }
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_REJECTED': {
@@ -86,8 +104,11 @@ module.exports = (state = {
       return {
         ...state,
         isConnected: false,
+        comPort: '',
         connectionType: '',
-        status: 'Disconnected'
+        status: 'Disconnected',
+        axes: [],
+        axis: ''
       }
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CLOSE_REJECTED': {
@@ -102,12 +123,14 @@ module.exports = (state = {
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
       return {
         ...state,
-        isMotorEnabled: action.payload.enabled ?
-          state.isMotorEnabled.concat(action.payload.axis) :
-          state.isMotorEnabled.filter(axis => axis !== action.payload.axis),
-        isJogActivated: state.isJogActivated.includes(action.payload.axis) && action.payload.enabled ?
-        state.isJogActivated.concat(action.payload.axis) :
-        state.isJogActivated.filter(axis => axis !== action.payload.axis),
+        axes: state.axes.map(axis =>
+          axis.number === action.payload.axis ?
+          {
+            ...axis,
+            isMotorEnabled: action.payload.enabled
+          } :
+          axis
+        ),
         motorResponse: '',
         status: action.payload.enabled ? 'Motor enabled' : 'Motor disabled'
       }
@@ -135,36 +158,30 @@ module.exports = (state = {
     case 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED': {
       return {
         ...state,
-        isMoving: true,
         status: 'Moving'
       }
     }
     case 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED': {
       return {
         ...state,
-        isMoving: false,
         status: 'Move failed'
       }
     }
     case 'HANDLE_HOME_SUCCEED': {
       return {
         ...state,
-        isMoving: true,
         status: 'Homing'
       }
     }
     case 'HANDLE_HOME_REJECTED': {
       return {
         ...state,
-        isMoving: false,
         status: 'Home failed'
       }
     }
     case 'HANDLE_MOVE_ABORT_SUCCEED': {
       return {
         ...state,
-        isMoving: false,
-        isJogging: false,
         status: 'Move aborted'
       }
     }
@@ -177,7 +194,6 @@ module.exports = (state = {
     case 'HANDLE_JOG_SUCCEED': {
       return {
         ...state,
-        isJogging: true,
         status: 'Jogging'
       }
     }
@@ -190,9 +206,14 @@ module.exports = (state = {
     case 'HANDLE_JOG_ACTIVATE': {
       return {
         ...state,
-        isJogActivated: action.payload.activated ?
-        state.isJogActivated.concat(action.payload.axis) :
-        state.isJogActivated.filter(axis => axis !== action.payload.axis),
+        axes: state.axes.map(axis =>
+          axis.number === action.payload.axis ?
+          {
+            ...axis,
+            isJogActivated: action.payload.activated
+          } :
+          axis
+        ),
         status: 'Ok'
       }
     }
@@ -262,6 +283,21 @@ module.exports = (state = {
       return {
         ...state,
         axis: action.payload
+      }
+    }
+
+    case 'HANDLE_IN_MOTION_BIT_SET': {
+      const {axis, bitValue} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            inMotion: bitValue
+          } :
+          axs
+        )
       }
     }
     default:

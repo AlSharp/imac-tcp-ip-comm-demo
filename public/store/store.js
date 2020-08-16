@@ -11,25 +11,25 @@ const {pick} = require('./utils');
 
 const isDev = require('electron-is-dev');
 
-module.exports = (socket, commandPort, usbSerial, ipcMain, windowStore) => {
+module.exports = (ipSerial, commandPort, usbSerial, ipcMain, windowStore) => {
   let middlewareEnhancer;
 
   if (isDev) {
     const logger = require('redux-logger').createLogger();
     middlewareEnhancer = applyMiddleware(
       thunk,
-      connectionMiddleware(socket, usbSerial),
-      // cmdPortMiddleware(commandPort, socket),
-      tcpSocketMiddleware(socket),
+      connectionMiddleware(ipSerial, usbSerial),
+      // cmdPortMiddleware(commandPort, ipSerial),
+      tcpSocketMiddleware(ipSerial),
       serialPortMiddleware(usbSerial),
       logger
     );
   } else {
     middlewareEnhancer = applyMiddleware(
       thunk,
-      connectionMiddleware(socket, usbSerial),
-      // cmdPortMiddleware(commandPort, socket),
-      tcpSocketMiddleware(socket),
+      connectionMiddleware(ipSerial, usbSerial),
+      // cmdPortMiddleware(commandPort, ipSerial),
+      tcpSocketMiddleware(ipSerial),
       serialPortMiddleware(usbSerial)
     )
   }
@@ -38,14 +38,18 @@ module.exports = (socket, commandPort, usbSerial, ipcMain, windowStore) => {
     reducer,
     undefined,
     compose(middlewareEnhancer, electronReduxNotifier(ipcMain, windowStore))
-  )
+  );
 
-  // sends each opened window its piece of redux store 
+  ipSerial.attachStore(store);
+  usbSerial.attachStore(store);
+
   ipcMain.on('window::req', (e, action) => {
     if (action.beingDispatchedFurther) {
+      // dispatch window's action
       store.dispatch(action);
     } else {
       switch(action.type) {
+        // sends each opened window its piece of redux store
         case 'HANDLE_INITIAL_STATE_GET': {
           windowStore.dispatch(
             {

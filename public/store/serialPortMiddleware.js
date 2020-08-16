@@ -40,14 +40,14 @@ module.exports = usbSerial => store => next => action => {
       }
       case 'HANDLE_DISTANCE_MOVE_EXECUTE': {
         handleDistanceMoveExecute(usbSerial, action)
-        .then(response => {
-          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
-          next(action);
-        })
+          .then(response => {
+            action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED';
+            next(action);
+          })
         break;
       }
       case 'HANDLE_JOG': {
@@ -60,30 +60,45 @@ module.exports = usbSerial => store => next => action => {
             action.type = 'HANDLE_JOG_REJECTED';
             next(action);
           })
-          break;
+        break;
       }
       case 'HANDLE_MOVE_ABORT': {
-        handleMoveAbort(usbSerial, action)
-        .then(response => {
-          action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_MOVE_ABORT_REJECTED';
-          next(action);
-        })
+        const axis = action.payload;
+        if (usbSerial.axesState[axis].isPolling) {
+          usbSerial.clientActions.push(
+            () => handleMoveAbort(usbSerial, action)
+              .then(response => {
+                action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+                next(action);
+              })
+              .catch(error => {
+                action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+                next(action);
+              })
+          )
+        } else {
+          handleMoveAbort(usbSerial, action)
+            .then(response => {
+              action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+              next(action);
+            })
+            .catch(error => {
+              action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+              next(action);
+            })
+        }
         break;
       }
       case 'HANDLE_JOG_ABORT': {
         handleMoveAbort(usbSerial, action)
-        .then(response => {
-          action.type = 'HANDLE_JOG_ABORT_SUCCEED';
-          next(action);
-        })
-        .catch(error => {
-          action.type = 'HANDLE_JOG_ABORT_REJECTED';
-          next(action);
-        })
+          .then(response => {
+            action.type = 'HANDLE_JOG_ABORT_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_JOG_ABORT_REJECTED';
+            next(action);
+          })
         break;
       }
       case 'HANDLE_HOME': {

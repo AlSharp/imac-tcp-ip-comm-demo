@@ -8,12 +8,14 @@ const {
   handleUSBSerialConnectionClose
 } = require('./usbSerialAsyncActions');
 
-module.exports = (socket, usbSerial) => store => next => action => {
+module.exports = (ipSerial, usbSerial) => store => next => action => {
   switch(action.type) {
     case 'HANDLE_IP_CONNECTION_CREATE': {
-      handleIPConnectionCreate(socket, action)
-        .then(data => {
+      handleIPConnectionCreate(ipSerial, action)
+        .then(() => ipSerial.getAxes())
+        .then(axes => {
           action.type = 'HANDLE_IP_CONNECTION_CREATE_SUCCEED';
+          action.payload = {...action.payload, axes}
           next(action);
         })
         .catch(error => {
@@ -24,7 +26,7 @@ module.exports = (socket, usbSerial) => store => next => action => {
       break;
     }
     case 'HANDLE_IP_CONNECTION_CLOSE': {
-      handleIPConnectionClose(socket)
+      handleIPConnectionClose(ipSerial)
         .then(data => {
           action.type = 'HANDLE_IP_CONNECTION_CLOSE_SUCCEED';
           next(action);
@@ -52,8 +54,11 @@ module.exports = (socket, usbSerial) => store => next => action => {
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CREATE': {
       handleUSBSerialConnectionCreate(usbSerial, action)
-        .then(data => {
+        .then(() => usbSerial.getAxes())
+        .then(axes => usbSerial.initAxesState(axes))
+        .then(axes => {
           action.type = 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED';
+          action.payload = {...action.payload, axes};
           next(action);
         })
         .catch(error => {

@@ -3,13 +3,6 @@ import {combineReducers} from 'redux';
 const local = (state = {
   stateReceived: false,
   ASCIICommand: '',
-  velocity: '',
-  velocityError: undefined,
-  acceleration: '',
-  accelerationError: undefined,
-  deceleration: '',
-  decelerationError: undefined,
-  areJogParamsUpdated: false,
   distance: '',
   distanceError: undefined
 }, action) => {
@@ -66,14 +59,10 @@ const shared = (state = {
   comPort: '',
   port: '',
   ip: '',
-  isMotorEnabled: [],
-  isJogActivated: [],
-  isJogging: false,
-  isMoving: false,
+  axis: '',
+  axes: [],
   motorResponse: '',
-  baudRate: '9600',
-  status: '',
-  axis: '0'
+  status: ''
 }, action) => {
 
   switch(action.type) {
