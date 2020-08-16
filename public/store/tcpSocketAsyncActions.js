@@ -52,6 +52,8 @@ const handleDistanceMoveExecute = async (ipSerial, action) => {
     for (const command of commands) {
       await ipSerial.write(command);
     }
+
+    ipSerial.startPolling(axis);
   }
   catch(error) {
     throw error;
@@ -87,6 +89,7 @@ const handleMoveAbort = async (ipSerial, action) => {
 const handleHome = async (ipSerial, action) => {
   try {
     await ipSerial.write(`${action.payload} t 2`);
+    ipSerial.startPolling(action.payload);
   }
   catch(error) {
     throw error;

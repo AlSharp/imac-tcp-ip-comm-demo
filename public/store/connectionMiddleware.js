@@ -13,6 +13,7 @@ module.exports = (ipSerial, usbSerial) => store => next => action => {
     case 'HANDLE_IP_CONNECTION_CREATE': {
       handleIPConnectionCreate(ipSerial, action)
         .then(() => ipSerial.getAxes())
+        .then(axes => ipSerial.initAxesState(axes))
         .then(axes => {
           action.type = 'HANDLE_IP_CONNECTION_CREATE_SUCCEED';
           action.payload = {...action.payload, axes}

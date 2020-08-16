@@ -7,11 +7,11 @@ const {
   handleHome
 } = require('./tcpSocketAsyncActions');
 
-module.exports = socket => store => next => action => {
+module.exports = ipSerial => store => next => action => {
   if (action.connectionType === 'ethernet') {
     switch(action.type) {
       case 'HANDLE_MOTOR_ENABLE': {
-        handleMotorEnable(socket, action)
+        handleMotorEnable(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_MOTOR_ENABLE_SUCCEED';
             next(action);
@@ -25,7 +25,7 @@ module.exports = socket => store => next => action => {
         break;
       }
       case 'HANDLE_ASCII_COMMAND_SUBMIT': {
-        handleASCIICommandSend(socket, action)
+        handleASCIICommandSend(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_ASCII_COMMAND_SUBMIT_SUCCEED';
             action.payload = response;
@@ -39,7 +39,7 @@ module.exports = socket => store => next => action => {
         break;
       }
       case 'HANDLE_DISTANCE_MOVE_EXECUTE': {
-        handleDistanceMoveExecute(socket, action)
+        handleDistanceMoveExecute(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED';
             next(action);
@@ -51,7 +51,7 @@ module.exports = socket => store => next => action => {
         break;
       }
       case 'HANDLE_JOG': {
-        handleJog(socket, action)
+        handleJog(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_JOG_SUCCEED';
             next(action);
@@ -63,19 +63,34 @@ module.exports = socket => store => next => action => {
         break;
       }
       case 'HANDLE_MOVE_ABORT': {
-        handleMoveAbort(socket, action)
-          .then(response => {
-            action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-            next(action);
-          })
-          .catch(error => {
-            action.type = 'HANDLE_MOVE_ABORT_REJECTED';
-            next(action);
-          })
+        const axis = action.payload;
+        if (ipSerial.axesState[axis].isPolling) {
+          ipSerial.clientActions.push(
+            () => handleMoveAbort(ipSerial, action)
+              .then(response => {
+                action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+                next(action);
+              })
+              .catch(error => {
+                action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+                next(action);
+              })
+          )
+        } else {
+          handleMoveAbort(ipSerial, action)
+            .then(response => {
+              action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
+              next(action);
+            })
+            .catch(error => {
+              action.type = 'HANDLE_MOVE_ABORT_REJECTED';
+              next(action);
+            })
+        }
         break;
       }
       case 'HANDLE_JOG_ABORT': {
-        handleMoveAbort(socket, action)
+        handleMoveAbort(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_JOG_ABORT_SUCCEED';
             next(action);
@@ -87,7 +102,7 @@ module.exports = socket => store => next => action => {
         break;
       }
       case 'HANDLE_HOME': {
-        handleHome(socket, action)
+        handleHome(ipSerial, action)
           .then(response => {
             action.type = 'HANDLE_HOME_SUCCEED';
             next(action);
