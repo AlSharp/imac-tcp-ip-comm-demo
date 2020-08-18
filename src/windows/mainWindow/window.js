@@ -22,7 +22,8 @@ import {
   handleMoveAbort,
   handleJog,
   handleAxisChange,
-  handleHome
+  handleHome,
+  handleMotorTypeSelect
 } from './actions';
 
 const getAxisState = (axes, axis) => {
@@ -281,7 +282,7 @@ const SelectboxInput = props =>
   <select
     disabled={props.disabled}
     value={props.value}
-    onChange={props.handleChange}
+    onChange={props.onChange}
     style={{width: props.width}}
   >
     {
@@ -538,7 +539,8 @@ class Window extends Component {
       handleMoveAbort,
       handleJog,
       handleAxisChange,
-      handleHome
+      handleHome,
+      handleMotorTypeSelect
     } = this.props;
     return (
       stateReceived ?
@@ -585,6 +587,22 @@ class Window extends Component {
                   onChange={handleMotorEnable}
                 />Enable motor
               </Label>
+            </InputField>
+          </Div>
+          <Div>
+            <InputField>
+              <Label
+                width="70px"
+              >
+                Motor type:
+              </Label>
+              <SelectboxInput
+                width="80px"
+                options={axes.length ? ['stepper', 'servo'] : []}
+                disabled={!isConnected || getAxisState(axes, axis).inMotion}
+                value={getAxisState(axes, axis).motorType}
+                onChange={handleMotorTypeSelect}
+              />
             </InputField>
           </Div>
           <Div>
@@ -706,6 +724,7 @@ export default connect(
     handleMoveAbort,
     handleJog,
     handleAxisChange,
-    handleHome
+    handleHome,
+    handleMotorTypeSelect
   }
 )(Window);

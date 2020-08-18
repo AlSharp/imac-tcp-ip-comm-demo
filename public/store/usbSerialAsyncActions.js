@@ -105,6 +105,27 @@ const handleHome = async (usbSerial, action) => {
   }
 }
 
+const handleAxisParameterChange = async (usbSerial, action) => {
+  try {
+    const {axis, parameter, parameterValue} = action.payload;
+    let register, value;
+    switch(parameter) {
+      case 'motorType': {
+        value = parameterValue === 'stepper' ? '31' : '21';
+        register = 'r0x24';
+        break;
+      }
+      default:
+        throw new Error('no such parameter');
+    }
+    await usbSerial.write(`${axis} s ${register} ${value}`);
+    usbSerial.axesState[axis][register].value = value;
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 module.exports = {
   handleUSBSerialRefresh,
   handleUSBSerialConnectionCreate,
@@ -114,5 +135,6 @@ module.exports = {
   handleDistanceMoveExecute,
   handleJog,
   handleMoveAbort,
-  handleHome
+  handleHome,
+  handleAxisParameterChange
 }

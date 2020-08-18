@@ -14,9 +14,8 @@ module.exports = (ipSerial, usbSerial) => store => next => action => {
       handleIPConnectionCreate(ipSerial, action)
         .then(() => ipSerial.getAxes())
         .then(axes => ipSerial.initAxesState(axes))
-        .then(axes => {
+        .then(() => {
           action.type = 'HANDLE_IP_CONNECTION_CREATE_SUCCEED';
-          action.payload = {...action.payload, axes}
           next(action);
         })
         .catch(error => {
@@ -57,9 +56,8 @@ module.exports = (ipSerial, usbSerial) => store => next => action => {
       handleUSBSerialConnectionCreate(usbSerial, action)
         .then(() => usbSerial.getAxes())
         .then(axes => usbSerial.initAxesState(axes))
-        .then(axes => {
+        .then(() => {
           action.type = 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED';
-          action.payload = {...action.payload, axes};
           next(action);
         })
         .catch(error => {

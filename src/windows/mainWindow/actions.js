@@ -245,3 +245,13 @@ export const handleHome = () => (dispatch, getState) => {
     beingDispatchedFurther: true
   })
 }
+
+export const handleMotorTypeSelect = event => (dispatch, getState) => {
+  const {axis, connectionType} = getState().shared;
+  dispatch({
+    type: 'HANDLE_AXIS_PARAMETER_CHANGE',
+    payload: {axis, parameter: 'motorType', parameterValue: event.target.value},
+    connectionType,
+    beingDispatchedFurther: true
+  })
+}

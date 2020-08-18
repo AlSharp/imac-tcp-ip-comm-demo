@@ -14,7 +14,7 @@ module.exports = (state = {
 
   switch(action.type) {
     case 'HANDLE_IP_CONNECTION_CREATE_SUCCEED': {
-      const {ip, port, axes} = action.payload;
+      const {ip, port} = action.payload;
       return {
         ...state,
         isConnected: true,
@@ -22,16 +22,7 @@ module.exports = (state = {
         connectionError: '',
         port,
         ip,
-        status: `Connected to ${ip}:${port}`,
-        axes: axes.map(axis => (
-          {
-            number: axis,
-            isMotorEnabled: false,
-            isJogActivated: false,
-            inMotion: false
-          }
-        )),
-        axis: axes[0] || ''
+        status: `Connected to ${ip}:${port}`
       };
     }
     
@@ -72,23 +63,14 @@ module.exports = (state = {
       }
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_SUCCEED': {
-      const {comPort, axes} = action.payload;
+      const {comPort} = action.payload;
       return {
         ...state,
         isConnected: true,
         connectionType: 'usbserial',
         connectionError: '',
         comPort: comPort,
-        status: `Connected to ${comPort}`,
-        axes: axes.map(axis => (
-          {
-            number: axis,
-            isMotorEnabled: false,
-            isJogActivated: false,
-            inMotion: false
-          }
-        )),
-        axis: axes[0] || ''
+        status: `Connected to ${comPort}`
       }
     }
     case 'HANDLE_USB_SERIAL_CONNECTION_CREATE_REJECTED': {
@@ -118,6 +100,22 @@ module.exports = (state = {
         connectionType: '',
         connectionError: action.payload,
         status: 'Disconnected'
+      }
+    }
+    case 'HANDLE_AXES_ADD': {
+      const {axes} = action.payload;
+      return {
+        ...state,
+        axes: axes.map(axis => (
+          {
+            number: axis,
+            isMotorEnabled: false,
+            isJogActivated: false,
+            inMotion: false,
+            motorType: null
+          }
+        )),
+        axis: axes[0] || null
       }
     }
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
@@ -295,6 +293,20 @@ module.exports = (state = {
           {
             ...axs,
             inMotion: bitValue
+          } :
+          axs
+        )
+      }
+    }
+    case 'HANDLE_MOTOR_TYPE_CHANGE': {
+      const {axis, motorType} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            motorType
           } :
           axs
         )

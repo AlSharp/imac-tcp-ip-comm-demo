@@ -292,11 +292,42 @@ const registerState = function(axis, register) {
       }
     }
   }
+  if (register === 'r0x24') {
+    return {
+      _value: null,
+      set value(val) {
+        const numValue = parseInt(val, 10);
+        if (numValue === 21) {
+          _this.axesState[axis].motorType = 'servo';
+        }
+        if (numValue === 31) {
+          _this.axesState[axis].motorType = 'stepper';
+        }
+        this._value = numValue;
+      },
+      get value() {
+        return this._value;
+      }
+    }
+  }
 }
 
 const buildAxisState = function(axis) {
   const _this = this;
   this.axesState[axis] = {
+    _motorType: null,
+    set motorType(val) {
+      if (val !== this._motorType) {
+        _this.store.dispatch({
+          type: 'HANDLE_MOTOR_TYPE_CHANGE',
+          payload: {axis, motorType: val}
+        })
+      }
+      this._motorType = val;
+    },
+    get motorType() {
+      return this._motorType;
+    },
     _inMotion: false,
     set inMotion(val) {
       if (val !== this._inMotion) {
@@ -314,7 +345,8 @@ const buildAxisState = function(axis) {
       return this._inMotion;
     },
     isPolling: false,
-    r0xa0: registerState.call(this, axis, 'r0xa0')
+    r0xa0: registerState.call(this, axis, 'r0xa0'),
+    r0x24: registerState.call(this, axis, 'r0x24')
   }
 }
 
@@ -446,6 +478,10 @@ module.exports = class UsbSerial {
   
       }
       this.axes = axes;
+      this.store.dispatch({
+        type: 'HANDLE_AXES_ADD',
+        payload: {axes}
+      });
       return this.axes; 
     }
     catch(error) {
@@ -457,9 +493,31 @@ module.exports = class UsbSerial {
     try {
       for (const axis of axes) {
         buildAxisState.call(this, axis);
+
         this.axesState[axis].r0xa0.value = await this.write(`${axis} g r0xa0`);
+        await this.getAndSetMotorType(axis);
       }
       return axes;
+    }
+    catch(error) {
+      throw error;
+    }
+  }
+
+  async getAndSetMotorType(axis) {
+    try {
+      const r0x24 = parseInt(await this.write(`${axis} g r0x24`), 10);
+        if (r0x24 > 20 && r0x24 < 30) {
+          if (r0x24 !== 21) {
+            await this.write(`${axis} s r0x24 21`);
+          }
+          this.axesState[axis].r0x24.value = 21;
+        } else if (r0x24 >= 30 && r0x24 <= 40) {
+          if (r0x24 !== 31) {
+            await this.write(`${axis} s r0x24 31`);
+          }
+          this.axesState[axis].r0x24.value = 31;
+        }
     }
     catch(error) {
       throw error;

@@ -22,7 +22,7 @@ module.exports = (ipSerial, commandPort, usbSerial, ipcMain, windowStore) => {
       // cmdPortMiddleware(commandPort, ipSerial),
       tcpSocketMiddleware(ipSerial),
       serialPortMiddleware(usbSerial),
-      logger
+      // logger
     );
   } else {
     middlewareEnhancer = applyMiddleware(

@@ -4,7 +4,8 @@ const {
   handleDistanceMoveExecute,
   handleJog,
   handleMoveAbort,
-  handleHome
+  handleHome,
+  handleAxisParameterChange
 } = require('./tcpSocketAsyncActions');
 
 module.exports = ipSerial => store => next => action => {
@@ -109,6 +110,15 @@ module.exports = ipSerial => store => next => action => {
           })
           .catch(error => {
             action.type = 'HANDLE_HOME_REJECTED';
+            next(action);
+          })
+        break;
+      }
+      case 'HANDLE_AXIS_PARAMETER_CHANGE': {
+        handleAxisParameterChange(ipSerial, action)
+          .catch(error => {
+            action.type = 'HANDLE_MESSAGE_SHOW';
+            action.payload = error;
             next(action);
           })
         break;
