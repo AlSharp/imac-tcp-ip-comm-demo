@@ -617,7 +617,7 @@ class Window extends Component {
                 options={axes.map(axis => axis.number)}
                 disabled={!isConnected || getAxisState(axes, axis).inMotion}
                 value={axis}
-                handleChange={handleAxisChange}
+                onChange={handleAxisChange}
               />
             </InputField>
           </Div>
