@@ -29,10 +29,12 @@ const handleUSBSerialConnectionClose = async usbSerial => {
 
 const handleMotorEnable = async (usbSerial, action) => {
   try {
-    const command = action.payload.enabled ?
-      `${action.payload.axis} s r0x70 2 0` :
-      `${action.payload.axis} s r0x70 258 0`;
-    const res = await usbSerial.write(command);
+    const {axis, enabled} = action.payload;
+    const oldValue = parseInt(await usbSerial.write(`${axis} g r0xab`), 10);
+    const newValue = enabled ?
+      oldValue | Math.pow(2, 0) :
+      oldValue & ~Math.pow(2, 0);
+    const res = await usbSerial.write(`${axis} s r0xab ${newValue}`);
     return res;
   }
   catch(error) {
@@ -126,6 +128,18 @@ const handleAxisParameterChange = async (usbSerial, action) => {
   }
 }
 
+const handleSequenceRun = async(usbSerial, action) => {
+  try {
+    const {sequenceNumber} = action.payload;
+    const value = 32768 + +sequenceNumber;
+    await usbSerial.write(`0 i r0 ${value}`);
+    usbSerial.startPolling('0', {inSequenceExecution: true});
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 module.exports = {
   handleUSBSerialRefresh,
   handleUSBSerialConnectionCreate,
@@ -136,5 +150,6 @@ module.exports = {
   handleJog,
   handleMoveAbort,
   handleHome,
-  handleAxisParameterChange
+  handleAxisParameterChange,
+  handleSequenceRun
 }

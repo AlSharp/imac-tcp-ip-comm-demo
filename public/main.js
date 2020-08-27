@@ -29,7 +29,7 @@ app.on('ready', () => {
       title: 'IMAC Motion Server Client',
       resizable: true,
       width: 474,
-      height: 485,
+      height: 555,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true

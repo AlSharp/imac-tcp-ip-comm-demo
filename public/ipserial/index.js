@@ -319,6 +319,23 @@ const registerState = function(axis, register) {
       }
     }
   }
+  if (register === 'r31') {
+    return {
+      _value: null,
+      set value(val) {
+        const numValue = parseInt(val, 10);
+        if (numValue !== this._value) {
+          if (numValue > 0) {
+            _this.state.inSequenceExecution = false;
+          }
+        }
+        this._value = numValue;
+      },
+      get value() {
+        return this._value;
+      }
+    }
+  }
 }
 
 const buildAxisState = function(axis) {
@@ -355,7 +372,8 @@ const buildAxisState = function(axis) {
     },
     isPolling: false,
     r0xa0: registerState.call(this, axis, 'r0xa0'),
-    r0x24: registerState.call(this, axis, 'r0x24')
+    r0x24: registerState.call(this, axis, 'r0x24'),
+    r31: registerState.call(this, axis, 'r31')
   }
 }
 
@@ -363,12 +381,31 @@ module.exports = class IpSerial {
   constructor() {
     this.socket = new net.Socket();
     this.store = null;
+    this.state = {
+      _inSequenceExecution: false,
+      set inSequenceExecution(val) {
+        if (val !== this._inSequenceExecution) {
+          _this.store.dispatch({
+            type: 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET',
+            payload: {bitValue: val}
+          });
+        }
+        if (!val) {
+          _this.stopPolling('0');
+        }
+        this._inSequenceExecution = val;
+      },
+      get inSequenceExecution() {
+        return this._inSequenceExecution;
+      }
+    };
     this.axes = [];
     this.axesState = {};
 
     this.clientActions = [];
 
     this.pollingRegisters = ['0xa0'];
+    this.CVMProgramRegisters = ['r31'];
   }
 
   attachStore(store) {
@@ -474,7 +511,7 @@ module.exports = class IpSerial {
 
         const slice = response.slice(0, 1);
 
-        if (slice === 'v') {
+        if (slice === 'v' || slice === 'r') {
           return resolve(response.slice(2));
         }
 
@@ -566,21 +603,40 @@ module.exports = class IpSerial {
     }
   }
 
-  async startPolling(axis) {
+  async startPolling(axis, options) {
     try {
       this.axesState[axis].isPolling = true;
-      while(this.axesState[axis].isPolling) {
-        for (const register of this.pollingRegisters) {
-          this.axesState[axis][`r${register}`]
-            .value = await this.write(`${axis} g r${register}`);
-          while(this.clientActions.length > 0) {
-            await this.clientActions.shift()();
-          }
-          await backToEventLoop();
+      
+      if (options) {
+        if (options.inSequenceExecution) {
+          this.state.inSequenceExecution = options.inSequenceExecution;
+          await this.write(`${axis} i r31 0`);
         }
       }
+
+      while(this.axesState[axis].isPolling) {
+        if (!this.state.inSequenceExecution) {
+          for (const register of this.pollingRegisters) {
+            this.axesState[axis][`r${register}`]
+              .value = await this.write(`${axis} g r${register}`);
+          }
+        }
+        if (this.state.inSequenceExecution) {
+          for (const register of this.CVMProgramRegisters) {
+            this.axesState[axis][register]
+              .value = await this.write(`${axis} i ${register}`);
+          }
+        }
+        while(this.clientActions.length > 0) {
+          await this.clientActions.shift()();
+        }
+        await backToEventLoop();
+      }
+
+      await this.write(`${axis} i r31 0`);
     }
     catch(error) {
+      await this.write(`${axis} i r31 0`);
       throw error;
     }
   }

@@ -255,3 +255,21 @@ export const handleMotorTypeSelect = event => (dispatch, getState) => {
     beingDispatchedFurther: true
   })
 }
+
+export const handleSequenceSelect = event => dispatch => {
+  dispatch({
+    type: 'HANDLE_SEQUENCE_SELECT',
+    payload: event.target.value
+  })
+}
+
+export const handleSequenceRun = () => (dispatch, getState) => {
+  const {sequenceNumber} = getState().local;
+  const {connectionType} = getState().shared;
+  dispatch({
+    type: 'HANDLE_SEQUENCE_RUN',
+    payload: {sequenceNumber},
+    connectionType,
+    beingDispatchedFurther: true
+  });
+}

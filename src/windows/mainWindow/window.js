@@ -23,7 +23,9 @@ import {
   handleJog,
   handleAxisChange,
   handleHome,
-  handleMotorTypeSelect
+  handleMotorTypeSelect,
+  handleSequenceSelect,
+  handleSequenceRun
 } from './actions';
 
 const getAxisState = (axes, axis) => {
@@ -278,15 +280,15 @@ const CheckboxInput = styled.input`
   margin-left: ${props => props.marginLeft};
 `
 
-const SelectboxInput = props =>
+const SelectboxInput = ({disabled, value, onChange, width, options}) =>
   <select
-    disabled={props.disabled}
-    value={props.value}
-    onChange={props.onChange}
-    style={{width: props.width}}
+    disabled={disabled}
+    value={value}
+    onChange={onChange}
+    style={{width: width}}
   >
     {
-      props.options.map((option, index) =>
+      options.map((option, index) =>
         <option value={option} key={index}>{option}</option>
       )
     }
@@ -350,7 +352,7 @@ const HomeGroupBox = ({
       <Legend>
         Home
       </Legend>
-      <Row padding="24px 15px 24px 15px">
+      <Row padding="24px 15px 26px 15px">
         <Button
           width="70px"
           margin="0"
@@ -380,7 +382,7 @@ const JogGroupBox = ({
       <Legend>
         Jog
       </Legend>
-      <Row padding="40px 15px 8px 15px">
+      <Row padding="40px 15px 10px 15px">
         <Button
           width="70px"
           margin="0"
@@ -416,25 +418,23 @@ const MoveGroupBox = ({
         Move
       </Legend>
       <Row padding="5px 15px">
-        <Div>
-          <InputField>
-            <Label width="80px">Distance</Label>
-            <TextInput
-              type="text"
-              id="distance"
-              placeholder="counts"
-              width="100px"
-              value={distance}
-              validationError={distanceError}
-              onChange={e => handleParameterValueChange(
-                e,
-                'distance',
-                [required, shouldBeInteger]
-                )
-              }
-            />
-          </InputField>
-        </Div>
+        <InputField>
+          <Label width="80px">Distance</Label>
+          <TextInput
+            type="text"
+            id="distance"
+            placeholder="counts"
+            width="100px"
+            value={distance}
+            validationError={distanceError}
+            onChange={e => handleParameterValueChange(
+              e,
+              'distance',
+              [required, shouldBeInteger]
+              )
+            }
+          />
+        </InputField>
         <ButtonDiv>
           <Button
             width="70px"
@@ -494,6 +494,51 @@ const ASCIICommandGroupBox = ({
     </FieldSet>
   </GroupBoxDiv>
 
+const SequenceRunSelector = ({
+  disabled,
+  inSequenceExecution,
+  sequenceNumber,
+  onSelect,
+  onRun
+}) =>
+  <GroupBoxDiv>
+    <FieldSet disabled={disabled}>
+      <Legend>
+        Sequences
+      </Legend>
+      <Row padding="5px 15px 7px 15px">
+        <InputField>
+          <Label width="80px">Sequence</Label>
+          <SelectboxInput
+            width="102px"
+            options={[1, 2, 3, 4, 5]}
+            disabled={false}
+            value={sequenceNumber}
+            onChange={onSelect}
+          />
+        </InputField>
+        <ButtonDiv>
+          <Button
+            width="70px"
+            margin="0 28px 0 0"
+            onClick={onRun}
+            disabled={inSequenceExecution}
+          >
+            Run
+          </Button>
+          <Button
+            width="70px"
+            margin="0"
+            onClick={e => console.log(e.target)}
+            disabled={false}
+          >
+            Stop
+          </Button>
+        </ButtonDiv>
+      </Row>
+    </FieldSet>
+  </GroupBoxDiv>
+
 class Window extends Component {
   
   componentDidMount() {
@@ -522,6 +567,8 @@ class Window extends Component {
       distance,
       distanceError,
       status,
+      sequenceNumber,
+      inSequenceExecution,
       handleIPChange,
       handleIPPortChange,
       handleIPConnect,
@@ -540,7 +587,9 @@ class Window extends Component {
       handleJog,
       handleAxisChange,
       handleHome,
-      handleMotorTypeSelect
+      handleMotorTypeSelect,
+      handleSequenceSelect,
+      handleSequenceRun
     } = this.props;
     return (
       stateReceived ?
@@ -582,7 +631,7 @@ class Window extends Component {
                   type="checkbox"
                   id="enable"
                   marginLeft="10px"
-                  disabled={!isConnected || getAxisState(axes, axis).inMotion}
+                  disabled={!isConnected || getAxisState(axes, axis).inMotion || inSequenceExecution}
                   checked={getAxisState(axes, axis).isMotorEnabled}
                   onChange={handleMotorEnable}
                 />Enable motor
@@ -599,7 +648,7 @@ class Window extends Component {
               <SelectboxInput
                 width="80px"
                 options={axes.length ? ['stepper', 'servo'] : []}
-                disabled={!isConnected || getAxisState(axes, axis).inMotion}
+                disabled={!isConnected || getAxisState(axes, axis).inMotion || inSequenceExecution}
                 value={getAxisState(axes, axis).motorType}
                 onChange={handleMotorTypeSelect}
               />
@@ -615,7 +664,7 @@ class Window extends Component {
               <SelectboxInput
                 width="70px"
                 options={axes.map(axis => axis.number)}
-                disabled={!isConnected || getAxisState(axes, axis).inMotion}
+                disabled={!isConnected || getAxisState(axes, axis).inMotion || inSequenceExecution}
                 value={axis}
                 onChange={handleAxisChange}
               />
@@ -641,19 +690,19 @@ class Window extends Component {
         </ActivateJogDiv>
         <GroupBoxContainer>
           <HomeGroupBox
-            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated}
+            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated || inSequenceExecution}
             inMotion={getAxisState(axes, axis).inMotion}
             handleHome={handleHome}
             handleMoveAbort={handleMoveAbort}
           />
           <JogGroupBox
-            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || !getAxisState(axes, axis).isJogActivated}
+            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || !getAxisState(axes, axis).isJogActivated || inSequenceExecution}
             handleJog={handleJog}
             handleMoveAbort={handleMoveAbort}
           />
         </GroupBoxContainer>
         <MoveGroupBox
-          disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated}
+          disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated || inSequenceExecution}
           inMotion={getAxisState(axes, axis).inMotion}
           distance={distance}
           distanceError={distanceError}
@@ -663,11 +712,18 @@ class Window extends Component {
         />
         <ASCIICommandGroupBox
           disabled={!isConnected || getAxisState(axes, axis).isJogActivated}
-          inMotion={getAxisState(axes, axis).inMotion}
+          inMotion={getAxisState(axes, axis).inMotion || inSequenceExecution}
           ASCIICommand={ASCIICommand}
           motorResponse={motorResponse}
           handleASCIICommandChange={handleASCIICommandChange}
           handleASCIICommandSubmit={handleASCIICommandSubmit}
+        />
+        <SequenceRunSelector
+          disabled={getAxisState(axes, axis).isJogActivated || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).inMotion}
+          inSequenceExecution={inSequenceExecution}
+          sequenceNumber={sequenceNumber}
+          onSelect={handleSequenceSelect}
+          onRun={handleSequenceRun}
         />
         <StatusBar>
           <Status>
@@ -698,7 +754,9 @@ const mapStateToProps = state => {
     distanceError: state.local.distanceError,
     status: state.shared.status,
     axis: state.shared.axis,
-    axes: state.shared.axes
+    axes: state.shared.axes,
+    sequenceNumber: state.local.sequenceNumber,
+    inSequenceExecution: state.shared.inSequenceExecution
   }
 }
 
@@ -725,6 +783,8 @@ export default connect(
     handleJog,
     handleAxisChange,
     handleHome,
-    handleMotorTypeSelect
+    handleMotorTypeSelect,
+    handleSequenceSelect,
+    handleSequenceRun
   }
 )(Window);

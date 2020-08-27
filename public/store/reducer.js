@@ -9,7 +9,8 @@ module.exports = (state = {
   axis: '',
   axes: [],
   motorResponse: '',
-  status: ''
+  status: '',
+  inSequenceExecution: false
 }, action) => {
 
   switch(action.type) {
@@ -149,7 +150,7 @@ module.exports = (state = {
     case 'HANDLE_ASCII_COMMAND_SUBMIT_REJECTED': {
       return {
         ...state,
-        motorResponse: action.payload,
+        motorResponse: action.payload.hwErrorCode,
         status: 'ASCII command: Error'
       }
     }
@@ -296,6 +297,12 @@ module.exports = (state = {
           } :
           axs
         )
+      }
+    }
+    case 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET': {
+      return {
+        ...state,
+        inSequenceExecution: action.payload.bitValue
       }
     }
     case 'HANDLE_MOTOR_TYPE_CHANGE': {

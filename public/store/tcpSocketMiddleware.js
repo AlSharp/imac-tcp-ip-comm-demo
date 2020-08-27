@@ -5,7 +5,8 @@ const {
   handleJog,
   handleMoveAbort,
   handleHome,
-  handleAxisParameterChange
+  handleAxisParameterChange,
+  handleSequenceRun
 } = require('./tcpSocketAsyncActions');
 
 module.exports = ipSerial => store => next => action => {
@@ -120,6 +121,14 @@ module.exports = ipSerial => store => next => action => {
             action.type = 'HANDLE_MESSAGE_SHOW';
             action.payload = error;
             next(action);
+          })
+        break;
+      }
+      case 'HANDLE_SEQUENCE_RUN': {
+        handleSequenceRun(ipSerial, action)
+          .catch(error => {
+            action.type = 'HANDLE_MESSAGE_SHOW';
+            action.payload = error;
           })
         break;
       }

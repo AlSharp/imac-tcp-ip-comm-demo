@@ -4,7 +4,8 @@ const local = (state = {
   stateReceived: false,
   ASCIICommand: '',
   distance: '',
-  distanceError: undefined
+  distanceError: undefined,
+  sequenceNumber: 1
 }, action) => {
   
   switch(action.type) {
@@ -40,11 +41,15 @@ const local = (state = {
         [`${parameterName}Error`]: validationError,
         areJogParamsUpdated: parameterName !== 'distance' ? 
           true :
-          state.areJogParamsUpdated,
-        
+          state.areJogParamsUpdated
       }
     }
-    
+    case 'HANDLE_SEQUENCE_SELECT': {
+      return {
+        ...state,
+        sequenceNumber: action.payload
+      }
+    }
 
     default:
       return state;
@@ -62,7 +67,8 @@ const shared = (state = {
   axis: '',
   axes: [],
   motorResponse: '',
-  status: ''
+  status: '',
+  inSequenceExecution: false
 }, action) => {
 
   switch(action.type) {

@@ -19,10 +19,12 @@ handleIPConnectionClose = async ipSerial => {
 
 const handleMotorEnable = async (ipSerial, action) => {
   try {
-    const command = action.payload.enabled ?
-      `${action.payload.axis} s r0x70 2 0` :
-      `${action.payload.axis} s r0x70 258 0`;
-    const res = await ipSerial.write(command);
+    const {axis, enabled} = action.payload;
+    const oldValue = parseInt(await ipSerial.write(`${axis} g r0xab`), 10);
+    const newValue = enabled ?
+      oldValue | Math.pow(2, 0) :
+      oldValue & ~Math.pow(2, 0);
+    const res = await ipSerial.write(`${axis} s r0xab ${newValue}`);
     return res;
   }
   catch(error) {
@@ -117,6 +119,18 @@ const handleAxisParameterChange = async (ipSerial, action) => {
   }
 }
 
+const handleSequenceRun = async (ipSerial, action) => {
+  try {
+    const {sequenceNumber} = action.payload;
+    const value = 32768 + +sequenceNumber;
+    await ipSerial.write(`0 i r0 ${value}`);
+    ipSerial.startPolling('0', {inSequenceExecution: true});
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 module.exports = {
   handleIPConnectionCreate,
   handleIPConnectionClose,
@@ -126,5 +140,6 @@ module.exports = {
   handleJog,
   handleMoveAbort,
   handleHome,
-  handleAxisParameterChange
+  handleAxisParameterChange,
+  handleSequenceRun
 }

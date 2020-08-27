@@ -5,7 +5,8 @@ const {
   handleJog,
   handleMoveAbort,
   handleHome,
-  handleAxisParameterChange
+  handleAxisParameterChange,
+  handleSequenceRun
 } = require('./usbSerialAsyncActions');
 
 module.exports = usbSerial => store => next => action => {
@@ -123,7 +124,15 @@ module.exports = usbSerial => store => next => action => {
           })
         break;
       }
-  
+      case 'HANDLE_SEQUENCE_RUN': {
+        handleSequenceRun(usbSerial, action)
+          .catch(error => {
+            action.type = 'HANDLE_MESSAGE_SHOW';
+            action.payload = error;
+          })
+        break;
+      }
+
       default:
         next(action);
     }
