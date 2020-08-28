@@ -379,6 +379,7 @@ const buildAxisState = function(axis) {
 
 module.exports = class IpSerial {
   constructor() {
+    const _this = this;
     this.socket = new net.Socket();
     this.store = null;
     this.state = {

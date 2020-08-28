@@ -25,7 +25,8 @@ import {
   handleHome,
   handleMotorTypeSelect,
   handleSequenceSelect,
-  handleSequenceRun
+  handleSequenceRun,
+  handleSequenceStop
 } from './actions';
 
 const getAxisState = (axes, axis) => {
@@ -499,7 +500,8 @@ const SequenceRunSelector = ({
   inSequenceExecution,
   sequenceNumber,
   onSelect,
-  onRun
+  onRun,
+  onStop
 }) =>
   <GroupBoxDiv>
     <FieldSet disabled={disabled}>
@@ -529,8 +531,8 @@ const SequenceRunSelector = ({
           <Button
             width="70px"
             margin="0"
-            onClick={e => console.log(e.target)}
-            disabled={false}
+            onClick={onStop}
+            disabled={!inSequenceExecution}
           >
             Stop
           </Button>
@@ -589,7 +591,8 @@ class Window extends Component {
       handleHome,
       handleMotorTypeSelect,
       handleSequenceSelect,
-      handleSequenceRun
+      handleSequenceRun,
+      handleSequenceStop
     } = this.props;
     return (
       stateReceived ?
@@ -724,6 +727,7 @@ class Window extends Component {
           sequenceNumber={sequenceNumber}
           onSelect={handleSequenceSelect}
           onRun={handleSequenceRun}
+          onStop={handleSequenceStop}
         />
         <StatusBar>
           <Status>
@@ -785,6 +789,7 @@ export default connect(
     handleHome,
     handleMotorTypeSelect,
     handleSequenceSelect,
-    handleSequenceRun
+    handleSequenceRun,
+    handleSequenceStop
   }
 )(Window);

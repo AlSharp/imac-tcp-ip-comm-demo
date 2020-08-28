@@ -128,12 +128,24 @@ const handleAxisParameterChange = async (usbSerial, action) => {
   }
 }
 
-const handleSequenceRun = async(usbSerial, action) => {
+const handleSequenceRun = async (usbSerial, action) => {
   try {
     const {sequenceNumber} = action.payload;
     const value = 32768 + +sequenceNumber;
     await usbSerial.write(`0 i r0 ${value}`);
     usbSerial.startPolling('0', {inSequenceExecution: true});
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
+const handleSequenceStop = async (usbSerial, action) => {
+  try {
+    for (const axis of usbSerial.axes) {
+      await usbSerial.write(`${axis} t 0`);
+    }
+    await usbSerial.write('0 i r31 1');
   }
   catch(error) {
     throw error;
@@ -151,5 +163,6 @@ module.exports = {
   handleMoveAbort,
   handleHome,
   handleAxisParameterChange,
-  handleSequenceRun
+  handleSequenceRun,
+  handleSequenceStop
 }

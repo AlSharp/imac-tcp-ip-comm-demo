@@ -273,3 +273,12 @@ export const handleSequenceRun = () => (dispatch, getState) => {
     beingDispatchedFurther: true
   });
 }
+
+export const handleSequenceStop = () => (dispatch, getState) => {
+  const {connectionType} = getState().shared;
+  dispatch({
+    type: 'HANDLE_SEQUENCE_STOP',
+    connectionType,
+    beingDispatchedFurther: true
+  })
+}

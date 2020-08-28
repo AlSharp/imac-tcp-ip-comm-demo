@@ -1,6 +1,6 @@
 {
-  "name": "imaceth",
-  "version": "1.0.0",
+  "name": "imac-motion-client",
+  "version": "1.1.0",
   "main": "public/main.js",
   "private": true,
   "homepage": "./",

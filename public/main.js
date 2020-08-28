@@ -26,7 +26,7 @@ app.on('ready', () => {
   // Create main window
   mainWindow = new BrowserWindow(
     {
-      title: 'IMAC Motion Server Client',
+      title: 'IMAC Motion Server Client v.1.1.0',
       resizable: true,
       width: 474,
       height: 555,

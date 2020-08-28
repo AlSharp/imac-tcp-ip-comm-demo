@@ -131,6 +131,18 @@ const handleSequenceRun = async (ipSerial, action) => {
   }
 }
 
+const handleSequenceStop = async (ipSerial, action) => {
+  try {
+    for (const axis of ipSerial.axes) {
+      await ipSerial.write(`${axis} t 0`);
+    }
+    await ipSerial.write('0 i r31 1');
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
 module.exports = {
   handleIPConnectionCreate,
   handleIPConnectionClose,
@@ -141,5 +153,6 @@ module.exports = {
   handleMoveAbort,
   handleHome,
   handleAxisParameterChange,
-  handleSequenceRun
+  handleSequenceRun,
+  handleSequenceStop
 }
