@@ -70,10 +70,6 @@ module.exports = ipSerial => store => next => action => {
         if (ipSerial.axesState[axis].isPolling) {
           ipSerial.clientActions.push(
             () => handleMoveAbort(ipSerial, action)
-              .then(response => {
-                action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-                next(action);
-              })
               .catch(error => {
                 action.type = 'HANDLE_MOVE_ABORT_REJECTED';
                 next(action);
@@ -81,10 +77,6 @@ module.exports = ipSerial => store => next => action => {
           )
         } else {
           handleMoveAbort(ipSerial, action)
-            .then(response => {
-              action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-              next(action);
-            })
             .catch(error => {
               action.type = 'HANDLE_MOVE_ABORT_REJECTED';
               next(action);

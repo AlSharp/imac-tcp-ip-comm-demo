@@ -148,12 +148,14 @@ const registerState = function(axis, register) {
         return this._bits[8];
       },
       set 9(value) {
+        _this.axesState[axis].posLimit = value;
         this._bits[9] = value;
       },
       get 9() {
         return this._bits[9];
       },
       set 10(value) {
+        _this.axesState[axis].negLimit = value;
         this._bits[10] = value;
       },
       get 10() {
@@ -190,12 +192,14 @@ const registerState = function(axis, register) {
         return this._bits[15];
       },
       set 16(value) {
+        _this.axesState[axis].posSWLimit = value;
         this._bits[16] = value;
       },
       get 16() {
         return this._bits[16];
       },
       set 17(value) {
+        _this.axesState[axis].negSWLimit = value;
         this._bits[17] = value;
       },
       get 17() {
@@ -256,10 +260,12 @@ const registerState = function(axis, register) {
         return this._bits[26];
       },
       set 27(value) {
-        if (value) {
-          _this.axesState[axis].inMotion = true;
-        } else {
-          _this.axesState[axis].inMotion = false;
+        if (!_this.state.inSequenceExecution) {
+          if (value) {
+            _this.axesState[axis].inMotion = true;
+          } else {
+            _this.axesState[axis].inMotion = false;
+          }
         }
         this._bits[27] = value;
       },
@@ -327,6 +333,21 @@ const registerState = function(axis, register) {
       }
     }
   }
+  if (register === 'r0x2d') {
+    return {
+      _value: null,
+      set value(val) {
+        const numValue = parseInt(val, 10);
+        if (numValue !== this._value) {
+          _this.axesState[axis].position = numValue;
+        }
+        this._value = numValue;
+      },
+      get value() {
+        return this._value;
+      }
+    }
+  }
 }
 
 const buildAxisState = function(axis) {
@@ -353,7 +374,7 @@ const buildAxisState = function(axis) {
           payload: {axis, bitValue: val}
         });
       }
-      if (!val) {
+      if (!val && !_this.state.inSequenceExecution) {
         _this.stopPolling(axis);
       }
       this._inMotion = val;
@@ -361,10 +382,66 @@ const buildAxisState = function(axis) {
     get inMotion() {
       return this._inMotion;
     },
+    _position: 0,
+    set position(val) {
+      _this.store.dispatch({
+        type: 'HANDLE_POSITION_CHANGE',
+        payload: {axis, value: val}
+      });
+      this._position = val;
+    },
+    get position() {
+      return this._position;
+    },
+    _negLimit: false,
+    set negLimit(val) {
+      _this.store.dispatch({
+        type: 'HANDLE_NEG_LIMIT_CHANGE',
+        payload: {axis, bitValue: val}
+      });
+      this._negLimit = val;
+    },
+    get negLimit() {
+      return this._negLimit;
+    },
+    _negSWLimit: false,
+    set negSWLimit(val) {
+      _this.store.dispatch({
+        type: 'HANDLE_NEG_SW_LIMIT_CHANGE',
+        payload: {axis, bitValue: val}
+      });
+      this._negSWLimit = val;
+    },
+    get negSWLimit() {
+      return this._negSWLimit;
+    },
+    _posLimit: false,
+    set posLimit(val) {
+      _this.store.dispatch({
+        type: 'HANDLE_POS_LIMIT_CHANGE',
+        payload: {axis, bitValue: val}
+      });
+      this._posLimit = val;
+    },
+    get posLimit() {
+      return this._posLimit;
+    },
+    _posSWLimit: false,
+    set posSWLimit(val) {
+      _this.store.dispatch({
+        type: 'HANDLE_POS_SW_LIMIT_CHANGE',
+        payload: {axis, bitValue: val}
+      });
+      this._posSWLimit = val;
+    },
+    get posSWLimit() {
+      return this._posSWLimit;
+    },
     isPolling: false,
     r0xa0: registerState.call(this, axis, 'r0xa0'),
     r0x24: registerState.call(this, axis, 'r0x24'),
-    r31: registerState.call(this, axis, 'r31')
+    r31: registerState.call(this, axis, 'r31'),
+    r0x2d: registerState.call(this, axis, 'r0x2d')
   }
 }
 
@@ -397,7 +474,7 @@ module.exports = class UsbSerial {
 
     this.clientActions = [];
 
-    this.pollingRegisters = ['0xa0'];
+    this.pollingRegisters = ['0xa0', '0x2d'];
     this.CVMProgramRegisters = ['r31'];
   }
 
@@ -574,11 +651,9 @@ module.exports = class UsbSerial {
       }
 
       while(this.axesState[axis].isPolling) {
-        if (!this.state.inSequenceExecution) {
-          for (const register of this.pollingRegisters) {
-            this.axesState[axis][`r${register}`]
-              .value = await this.write(`${axis} g r${register}`);
-          }
+        for (const register of this.pollingRegisters) {
+          this.axesState[axis][`r${register}`]
+            .value = await this.write(`${axis} g r${register}`);
         }
         if (this.state.inSequenceExecution) {
           for (const register of this.CVMProgramRegisters) {

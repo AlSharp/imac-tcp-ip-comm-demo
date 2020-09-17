@@ -73,6 +73,8 @@ const handleJog = async (ipSerial, action) => {
     for (const command of commands) {
       await ipSerial.write(command);
     }
+
+    ipSerial.startPolling(axis);
   }
   catch(error) {
     throw error;

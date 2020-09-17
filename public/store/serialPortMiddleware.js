@@ -70,10 +70,6 @@ module.exports = usbSerial => store => next => action => {
         if (usbSerial.axesState[axis].isPolling) {
           usbSerial.clientActions.push(
             () => handleMoveAbort(usbSerial, action)
-              .then(response => {
-                action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-                next(action);
-              })
               .catch(error => {
                 action.type = 'HANDLE_MOVE_ABORT_REJECTED';
                 next(action);
@@ -81,10 +77,6 @@ module.exports = usbSerial => store => next => action => {
           )
         } else {
           handleMoveAbort(usbSerial, action)
-            .then(response => {
-              action.type = 'HANDLE_MOVE_ABORT_SUCCEED';
-              next(action);
-            })
             .catch(error => {
               action.type = 'HANDLE_MOVE_ABORT_REJECTED';
               next(action);

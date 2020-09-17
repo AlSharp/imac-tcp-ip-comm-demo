@@ -31,7 +31,15 @@ import {
 
 const getAxisState = (axes, axis) => {
   const axisState = axes.find(el => el.number === axis);
-  return axisState || {isMotorEnabled: false, isJogActivated: false, inMotion: false}
+  return axisState || {
+    isMotorEnabled: false, isJogActivated: false, inMotion: false,
+    motorType: '',
+    position: 0,
+    negLimit: false,
+    negSWLimit: false,
+    posLimit: false,
+    posSWLimit: false
+  }
 }
 
 const Div = styled.div`
@@ -257,6 +265,7 @@ const Legend = styled.legend`
 const InputField = styled.div`
   font-size: 12px;
   padding: 3px 0;
+  text-align: ${props => props.textAlign};
 `;
 
 const Label = styled.label`
@@ -323,10 +332,19 @@ const LED = styled.div`
   left: 425px;
   top: 7px;
   display: inline-block;
-  background-color: ${props => props.connected ? 'green' : 'red'};
+  background-color: ${props => props.active ? 'green' : 'red'};
   width: 10px;
   height: 10px;
   border-radius: 5px;
+`;
+
+const InputLED = styled.div`
+  display: inline-block;
+  background-color: ${props => props.active ? 'green' : 'red'};
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  margin: ${props => props.margin};
 `;
 
 const required = value => value ? undefined : 'Required';
@@ -457,6 +475,48 @@ const MoveGroupBox = ({
     </FieldSet>
   </GroupBoxDiv>
 
+const PositionGoupBox = ({
+  position, negLimit, posLimit, negSWLimit, posSWLimit
+}) =>
+  <GroupBoxDiv>
+    <FieldSet>
+      <Legend>
+        Position status
+      </Legend>
+      <Row padding="5px 15px">
+        <Div>
+          <InputField textAlign="left">
+            <InputLED active={negLimit} margin="0 4px 0 0" />
+            <Label>Neg. limit</Label>
+          </InputField>
+          <InputField textAlign="left">
+            <InputLED active={negSWLimit} margin="0 4px 0 0" />
+            <Label>Neg. SW limit</Label>
+          </InputField>
+        </Div>
+        <Div padding="10px 0 0 0">
+          <TextInput
+            type="text"
+            id="position"
+            placeholder="counts"
+            width="100px"
+            value={position}
+            disabled
+          />
+        </Div>
+        <Div>
+          <InputField textAlign="right">
+            <Label>Pos. limit</Label>
+            <InputLED active={posLimit} margin="0 0 0 4px" />
+          </InputField>
+          <InputField textAlign="right">
+            <Label>Pos. SW limit</Label>
+            <InputLED active={posSWLimit} margin="0 0 0 4px" />
+          </InputField>
+        </Div>
+      </Row>
+    </FieldSet>
+  </GroupBoxDiv>
 
 const ASCIICommandGroupBox = ({
   disabled, inMotion,
@@ -713,6 +773,13 @@ class Window extends Component {
           handleMoveButtonClick={handleMoveButtonClick}
           handleMoveAbort={handleMoveAbort}
         />
+        <PositionGoupBox
+          position={getAxisState(axes, axis).position}
+          negLimit={getAxisState(axes, axis).negLimit}
+          negSWLimit={getAxisState(axes, axis).negSWLimit}
+          posLimit={getAxisState(axes, axis).posLimit}
+          posSWLimit={getAxisState(axes, axis).posSWLimit}
+        />
         <ASCIICommandGroupBox
           disabled={!isConnected || getAxisState(axes, axis).isJogActivated}
           inMotion={getAxisState(axes, axis).inMotion || inSequenceExecution}
@@ -734,7 +801,7 @@ class Window extends Component {
             <span>Status: </span>
             {status}
           </Status>
-          <LED connected={isConnected}/>
+          <LED active={isConnected}/>
         </StatusBar>
       </Div> :
       null

@@ -82,6 +82,8 @@ const handleJog = async (usbSerial, action) => {
     for (const command of commands) {
       await usbSerial.write(command);
     }
+
+    usbSerial.startPolling(axis);
   }
   catch(error) {
     throw error;

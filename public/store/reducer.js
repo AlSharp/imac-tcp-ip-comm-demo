@@ -113,7 +113,12 @@ module.exports = (state = {
             isMotorEnabled: false,
             isJogActivated: false,
             inMotion: false,
-            motorType: null
+            motorType: '',
+            position: 0,
+            negLimit: false,
+            negSWLimit: false,
+            posLimit: false,
+            posSWLimit: false
           }
         )),
         axis: axes[0] || null
@@ -155,10 +160,7 @@ module.exports = (state = {
       }
     }
     case 'HANDLE_DISTANCE_MOVE_EXECUTE_SUCCEED': {
-      return {
-        ...state,
-        status: 'Moving'
-      }
+      return state;
     }
     case 'HANDLE_DISTANCE_MOVE_EXECUTE_REJECTED': {
       return {
@@ -181,7 +183,7 @@ module.exports = (state = {
     case 'HANDLE_MOVE_ABORT_SUCCEED': {
       return {
         ...state,
-        status: 'Move aborted'
+        status: 'Move is aborted'
       }
     }
     case 'HANDLE_MOVE_ABORT_REJECTED': {
@@ -191,10 +193,7 @@ module.exports = (state = {
       }
     }
     case 'HANDLE_JOG_SUCCEED': {
-      return {
-        ...state,
-        status: 'Jogging'
-      }
+      return state;
     }
     case 'HANDLE_JOG_REJECTED': {
       return {
@@ -296,13 +295,94 @@ module.exports = (state = {
             inMotion: bitValue
           } :
           axs
+        ),
+        status: bitValue ?
+          state.status === 'Homing' ? state.status : 'Moving' :
+          state.status === 'Homing' ? 'Homing is completed' : 'Motion is completed' 
+      }
+    }
+
+    case 'HANDLE_POSITION_CHANGE': {
+      const {axis, value} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            position: value
+          } :
+          axs
         )
       }
     }
-    case 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET': {
+
+    case 'HANDLE_NEG_LIMIT_CHANGE': {
+      const {axis, bitValue} = action.payload;
       return {
         ...state,
-        inSequenceExecution: action.payload.bitValue
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            negLimit: bitValue
+          } :
+          axs
+        )
+      }
+    }
+
+    case 'HANDLE_NEG_SW_LIMIT_CHANGE': {
+      const {axis, bitValue} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            negSWLimit: bitValue
+          } :
+          axs
+        )
+      }
+    }
+
+    case 'HANDLE_POS_LIMIT_CHANGE': {
+      const {axis, bitValue} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            posLimit: bitValue
+          } :
+          axs
+        )
+      }
+    }
+
+    case 'HANDLE_POS_SW_LIMIT_CHANGE': {
+      const {axis, bitValue} = action.payload;
+      return {
+        ...state,
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
+          {
+            ...axs,
+            posSWLimit: bitValue
+          } :
+          axs
+        )
+      }
+    }
+
+    case 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET': {
+      const {bitValue} = action.payload;
+      return {
+        ...state,
+        inSequenceExecution: bitValue,
+        status: bitValue ? 'Running sequence' : 'Sequence is completed'
       }
     }
     case 'HANDLE_MOTOR_TYPE_CHANGE': {
