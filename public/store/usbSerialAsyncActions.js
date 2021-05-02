@@ -54,10 +54,13 @@ const handleASCIICommandSend = async (usbSerial, action) => {
 
 const handleDistanceMoveExecute = async (usbSerial, action) => {
   try {
-    const {axis, distance} = action.payload;
+    const {axis, distance, velocity, acceleration, deceleration} = action.payload;
     const commands = [
       `${axis} s r0xc8 256`,
       `${axis} s r0xca ${distance}`,
+      `${axis} s r0xcb ${+velocity*10}`,
+      `${axis} s r0xcc ${+acceleration/10}`,
+      `${axis} s r0xcd ${+deceleration/10}`,
       `${axis} t 1`
     ];
     for (const command of commands) {
@@ -73,9 +76,9 @@ const handleDistanceMoveExecute = async (usbSerial, action) => {
 
 const handleJog = async (usbSerial, action) => {
   try {
-    const {axis, direction} = action.payload;
+    const {axis, direction, jogVelocity} = action.payload;
     const commands = [
-      `${axis} s r0xc8 2`,
+      `${axis} s r0xcb ${+jogVelocity*10}`,
       `${axis} s r0xca ${direction === 'positive' ? '1' : '-1'}`,
       `${axis} t 1`
     ]
@@ -84,6 +87,20 @@ const handleJog = async (usbSerial, action) => {
     }
 
     usbSerial.startPolling(axis);
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
+handleJogActivate = async (usbSerial, action) => {
+  try {
+    const {axis, activated, velocity, jogVelocity} = action.payload;
+    const value = activated ? '2' : '256';
+    await usbSerial.write(`${axis} s r0xc8 ${value}`);
+    if (velocity.length) {
+      await usbSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+    }
   }
   catch(error) {
     throw error;
@@ -132,10 +149,10 @@ const handleAxisParameterChange = async (usbSerial, action) => {
 
 const handleSequenceRun = async (usbSerial, action) => {
   try {
-    const {sequenceNumber} = action.payload;
+    const {axis, sequenceNumber} = action.payload;
     const value = 32768 + +sequenceNumber;
-    await usbSerial.write(`0 i r0 ${value}`);
-    usbSerial.startPolling('0', {inSequenceExecution: true});
+    await usbSerial.write(`${axis} i r0 ${value}`);
+    usbSerial.startPolling(axis, {inSequenceExecution: true});
   }
   catch(error) {
     throw error;
@@ -147,7 +164,7 @@ const handleSequenceStop = async (usbSerial, action) => {
     for (const axis of usbSerial.axes) {
       await usbSerial.write(`${axis} t 0`);
     }
-    await usbSerial.write('0 i r31 1');
+    await usbSerial.write(`${action.payload.axis} i r31 1`);
   }
   catch(error) {
     throw error;

@@ -26,10 +26,10 @@ app.on('ready', () => {
   // Create main window
   mainWindow = new BrowserWindow(
     {
-      title: 'IMAC Motion Server Client v.1.2.0',
+      title: 'IMAC Motion Server Client v.1.3.0',
       resizable: true,
       width: 474,
-      height: 635,
+      height: 735,
       backgroundColor: '#F0F0F0',
       webPreferences: {
         nodeIntegration: true

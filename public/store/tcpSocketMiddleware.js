@@ -96,6 +96,18 @@ module.exports = ipSerial => store => next => action => {
           })
         break;
       }
+      case 'HANDLE_JOG_ACTIVATE': {
+        handleJogActivate(ipSerial, action)
+          .then(response => {
+            action.type = 'HANDLE_JOG_ACTIVATE_SUCCEED';
+            next(action);
+          })
+          .catch(error => {
+            action.type = 'HANDLE_JOG_ACTIVATE_REJECTED';
+            next(action);
+          })
+        break;
+      }
       case 'HANDLE_HOME': {
         handleHome(ipSerial, action)
           .then(response => {

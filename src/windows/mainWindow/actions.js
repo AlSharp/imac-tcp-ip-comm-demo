@@ -102,21 +102,6 @@ export const handleMotorEnable = event => (dispatch, getState) => {
   )
 }
 
-export const handleJogActivate = event => (dispatch, getState) => {
-  const {axis, connectionType} = getState().shared;
-  dispatch(
-    {
-      type: 'HANDLE_JOG_ACTIVATE',
-      payload: {
-        activated: event.target.checked,
-        axis: axis
-      },
-      connectionType,
-      beingDispatchedFurther: true
-    }
-  )
-}
-
 export const handleASCIICommandChange = event => dispatch => {
   dispatch(
     {
@@ -162,16 +147,19 @@ export const handleParameterValueChange = (event, parameterName, validationFunct
 }
 
 export const handleMoveButtonClick = () => (dispatch, getState) => {
-  const {distance, distanceError} = getState().local;
-  const {connectionType} = getState().shared;
-  const axis = getState().shared.axis
-  if (distanceError || distance.length === 0) {
-    return;
-  }
+  const {
+    distance, distanceError,
+    velocity, velocityError,
+    acceleration, accelerationError,
+    deceleration, decelerationError
+  } = getState().local;
+  const {connectionType, axis} = getState().shared;
+  if (distanceError || velocityError || accelerationError || decelerationError) return;
+  if (!distance.length || !velocity.length || !acceleration.length || !deceleration.length) return;
   dispatch(
     {
       type: 'HANDLE_DISTANCE_MOVE_EXECUTE',
-      payload: {distance, axis},
+      payload: {distance, velocity, acceleration, deceleration, axis},
       connectionType,
       beingDispatchedFurther: true
     }
@@ -190,12 +178,31 @@ export const handleMoveAbort = () => (dispatch, getState) => {
   )
 }
 
+export const handleJogActivate = event => (dispatch, getState) => {
+  const {axis, connectionType} = getState().shared;
+  const {jogVelocity, velocity} = getState().local;
+  dispatch(
+    {
+      type: 'HANDLE_JOG_ACTIVATE',
+      payload: {
+        activated: event.target.checked,
+        axis,
+        velocity,
+        jogVelocity
+      },
+      connectionType,
+      beingDispatchedFurther: true
+    }
+  )
+}
+
 export const handleJog = direction => (dispatch, getState) => {
   const {axis, connectionType} = getState().shared;
+  const {jogVelocity} = getState().local;
   dispatch(
     {
       type: 'HANDLE_JOG',
-      payload: {axis, direction},
+      payload: {axis, direction, jogVelocity},
       connectionType,
       beingDispatchedFurther: true
     }
@@ -265,19 +272,20 @@ export const handleSequenceSelect = event => dispatch => {
 
 export const handleSequenceRun = () => (dispatch, getState) => {
   const {sequenceNumber} = getState().local;
-  const {connectionType} = getState().shared;
+  const {connectionType, axis} = getState().shared;
   dispatch({
     type: 'HANDLE_SEQUENCE_RUN',
-    payload: {sequenceNumber},
+    payload: {sequenceNumber, axis},
     connectionType,
     beingDispatchedFurther: true
   });
 }
 
 export const handleSequenceStop = () => (dispatch, getState) => {
-  const {connectionType} = getState().shared;
+  const {connectionType, axis} = getState().shared;
   dispatch({
     type: 'HANDLE_SEQUENCE_STOP',
+    payload: {axis},
     connectionType,
     beingDispatchedFurther: true
   })

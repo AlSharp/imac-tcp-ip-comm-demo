@@ -57,7 +57,9 @@ const Form = styled.form`
 
 const Row = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  justify-content: ${props => props.justifyContent || 'space-between'};
+  text-align: ${props => props.textAlign};
   height: ${props => props.height};
   padding: ${props => props.padding};
 `;
@@ -117,7 +119,7 @@ const EthernetGroupBox = ({
                 onChange={handleIPChange}
               />
             </InputField>
-            <ButtonDiv align="right">
+            <Row justifyContent="flex-end" padding=" 5px 0 2px 0">
               {
                 !isConnected ?
                 <Button type="submit">Connect</Button> :
@@ -129,7 +131,7 @@ const EthernetGroupBox = ({
                   Disconnect
                 </Button>
               }
-            </ButtonDiv>
+            </Row>
           </Form>
         </Div>
       </FieldSet>
@@ -196,7 +198,7 @@ const COMGroupBox = ({
             comPort={comPort}
             onChange={handleComPortSelect}
           />
-          <ButtonDiv align="right">
+          <Row justifyContent="space-between" padding="5px 0 2px 0">
             {
               !isConnected ?
               <Button
@@ -227,20 +229,12 @@ const COMGroupBox = ({
                 Disconnect
               </Button>
             }
-          </ButtonDiv>
+          </Row>
         </Div>
       </FieldSet>
     </Div>
   )
 }
-
-const ActivateJogDiv = styled.div`
-  display: inline-block;
-  position: absolute;
-  top: 175px;
-  left: 259px;
-  width: 150px;
-`;
 
 const GroupBoxDiv = styled.div`
   padding: 5px 15px;
@@ -264,7 +258,7 @@ const Legend = styled.legend`
 
 const InputField = styled.div`
   font-size: 12px;
-  padding: 3px 0;
+  padding: ${props => props.padding || '3px 0'};
   text-align: ${props => props.textAlign};
 `;
 
@@ -305,8 +299,11 @@ const SelectboxInput = ({disabled, value, onChange, width, options}) =>
   </select>
 
 const ButtonDiv = styled.div`
-  text-align: ${props => props.align || 'center'};
+  display: flex;
+  flex-direction: row;
+  justify-content: ${props => props.justifyContent || 'left'};
   margin: ${props => props.margin};
+  padding: ${props => props.padding};
 `;
 
 const Button = styled.button`
@@ -347,7 +344,7 @@ const InputLED = styled.div`
   margin: ${props => props.margin};
 `;
 
-const required = value => value ? undefined : 'Required';
+const required = value => value.length ? undefined : 'Required';
 
 const shouldBeInteger = value => {
   const val = Math.floor(Number(value));
@@ -355,10 +352,13 @@ const shouldBeInteger = value => {
     undefined : 'Should be integer';
 }
 
+const shouldBePositive = value => +value >= 0 ? undefined : 'Should not be negative';
+
 const GroupBoxContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  padding: 5px 15px;
+  flex-direction: ${props => props.flexDirection || 'row'};
+  justify-content: ${props => props.justifyContent || 'space-between'};
+  padding: 0;
 `;
 
 const HomeGroupBox = ({
@@ -366,7 +366,7 @@ const HomeGroupBox = ({
   inMotion,
   handleHome, handleMoveAbort
 }) =>
-  <Div width="200px">
+  <GroupBoxDiv>
     <FieldSet disabled={disabled}>
       <Legend>
         Home
@@ -389,25 +389,60 @@ const HomeGroupBox = ({
         </Button>
       </Row>
     </FieldSet>
-  </Div>
+  </GroupBoxDiv>
 
 const JogGroupBox = ({
+  isConnected,
+  axes,
+  axis,
   disabled,
+  jogVelocity,
+  jogVelocityError,
+  handleParameterValueChange,
+  handleJogActivate,
   handleJog,
   handleMoveAbort
 }) =>
-  <Div width="200px">
+  <GroupBoxDiv width="200px">
     <FieldSet disabled={disabled}>
       <Legend>
-        Jog
+          <CheckboxInput
+            type="checkbox"
+            id="activate-jog"
+            marginLeft="0"
+            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).inMotion}
+            checked={getAxisState(axes, axis).isJogActivated}
+            onChange={handleJogActivate}
+          />
+          Jog
       </Legend>
-      <Row padding="40px 15px 10px 15px">
+      <Row padding="3px 15px 0px 15px">
+        <InputField>
+          <Label width="65px">Jog velocity</Label>
+          <TextInput
+            type="text"
+            id="jogVelocity"
+            placeholder="counts/sec"
+            width="100px"
+            value={jogVelocity}
+            validationError={jogVelocityError}
+            onChange={e => handleParameterValueChange(
+              e,
+              'jogVelocity',
+              [required, shouldBeInteger, shouldBePositive]
+              )
+            }
+          />
+        </InputField>
+      </Row>
+      <Row padding="10px 15px 10px 15px">
         <Button
           width="70px"
           margin="0"
           onMouseDown={e => handleJog('positive')}
           onMouseLeave={handleMoveAbort}
           onMouseUp={handleMoveAbort}
+          disabled={!jogVelocity.length || jogVelocityError}
         >
           Positive
         </Button>
@@ -417,16 +452,20 @@ const JogGroupBox = ({
           onMouseDown={e => handleJog('negative')}
           onMouseLeave={handleMoveAbort}
           onMouseUp={handleMoveAbort}
+          disabled={!jogVelocity.length || jogVelocityError}
         >
           Negative
         </Button>
       </Row>
     </FieldSet>
-  </Div>
+  </GroupBoxDiv>
 
 const MoveGroupBox = ({
   disabled, inMotion,
   distance, distanceError,
+  velocity, velocityError,
+  acceleration, accelerationError,
+  deceleration, decelerationError,
   handleParameterValueChange,
   handleMoveButtonClick,
   handleMoveAbort
@@ -436,9 +475,9 @@ const MoveGroupBox = ({
       <Legend>
         Move
       </Legend>
-      <Row padding="5px 15px">
+      <Row padding="3px 15px 0px 15px">
         <InputField>
-          <Label width="80px">Distance</Label>
+          <Label width="65px">Distance</Label>
           <TextInput
             type="text"
             id="distance"
@@ -454,34 +493,101 @@ const MoveGroupBox = ({
             }
           />
         </InputField>
-        <ButtonDiv>
-          <Button
-            width="70px"
-            margin="0 28px 0 0"
-            onClick={handleMoveButtonClick}
-            disabled={inMotion}
-          >
-            Move
-          </Button>
-          <Button
-            width="70px"
-            margin="0"
-            onClick={handleMoveAbort}
-          >
-            Abort
-          </Button>
-        </ButtonDiv>
+      </Row>
+      <Row padding="3px 15px 0px 15px">
+        <InputField>
+          <Label width="65px">Velocity</Label>
+          <TextInput
+            type="text"
+            id="velocity"
+            placeholder="counts/sec"
+            width="100px"
+            value={velocity}
+            validationError={velocityError}
+            onChange={e => handleParameterValueChange(
+              e,
+              'velocity',
+              [required, shouldBeInteger, shouldBePositive]
+              )
+            }
+          />
+        </InputField>
+      </Row>
+      <Row padding="3px 15px 0px 15px">
+        <InputField>
+          <Label width="65px">Accel</Label>
+          <TextInput
+            type="text"
+            id="accel"
+            placeholder="counts/sec²"
+            width="100px"
+            value={acceleration}
+            validationError={accelerationError}
+            onChange={e => handleParameterValueChange(
+              e,
+              'acceleration',
+              [required, shouldBeInteger, shouldBePositive]
+              )
+            }
+          />
+        </InputField>
+      </Row>
+      <Row padding="3px 15px 0px 15px">
+        <InputField>
+          <Label width="65px">Decel</Label>
+          <TextInput
+            type="text"
+            id="decel"
+            placeholder="counts/sec²"
+            width="100px"
+            value={deceleration}
+            validationError={decelerationError}
+            onChange={e => handleParameterValueChange(
+              e,
+              'deceleration',
+              [required, shouldBeInteger, shouldBePositive]
+              )
+            }
+          />
+        </InputField>
+      </Row>
+      <Row padding="10px 15px 10px 15px">
+        <Button
+          width="70px"
+          margin="0"
+          onClick={handleMoveButtonClick}
+          disabled={
+            inMotion ||
+            !distance.length ||
+            distanceError ||
+            !velocity.length ||
+            velocityError ||
+            !acceleration.length ||
+            accelerationError ||
+            !deceleration.length ||
+            decelerationError
+          }
+        >
+          Move
+        </Button>
+        <Button
+          width="70px"
+          margin="0"
+          onClick={handleMoveAbort}
+        >
+          Abort
+        </Button>
       </Row>
     </FieldSet>
   </GroupBoxDiv>
 
-const PositionGoupBox = ({
-  position, negLimit, posLimit, negSWLimit, posSWLimit
+const LimitSensorsGroupBox = ({
+  negLimit, posLimit, negSWLimit, posSWLimit
 }) =>
   <GroupBoxDiv>
     <FieldSet>
       <Legend>
-        Position status
+        Limit sensors
       </Legend>
       <Row padding="5px 15px">
         <Div>
@@ -493,16 +599,6 @@ const PositionGoupBox = ({
             <InputLED active={negSWLimit} margin="0 4px 0 0" />
             <Label>Neg. SW limit</Label>
           </InputField>
-        </Div>
-        <Div padding="10px 0 0 0">
-          <TextInput
-            type="text"
-            id="position"
-            placeholder="counts"
-            width="100px"
-            value={position}
-            disabled
-          />
         </Div>
         <Div>
           <InputField textAlign="right">
@@ -628,6 +724,14 @@ class Window extends Component {
       motorResponse,
       distance,
       distanceError,
+      velocity,
+      velocityError,
+      jogVelocity,
+      jogVelocityError,
+      acceleration,
+      accelerationError,
+      deceleration,
+      decelerationError,
       status,
       sequenceNumber,
       inSequenceExecution,
@@ -734,47 +838,57 @@ class Window extends Component {
             </InputField>
           </Div>
         </Row>
-        <ActivateJogDiv>
-          <InputField>
-            <Label
-              width="150px"
-              onClick={e => e.preventDefault()}
-            >
-              <CheckboxInput
-                type="checkbox"
-                id="activate-jog"
-                marginLeft="0"
-                disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).inMotion}
-                checked={getAxisState(axes, axis).isJogActivated}
-                onChange={handleJogActivate}
-              />Activate Jog
-            </Label>
-          </InputField>
-        </ActivateJogDiv>
         <GroupBoxContainer>
-          <HomeGroupBox
+          <MoveGroupBox
             disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated || inSequenceExecution}
             inMotion={getAxisState(axes, axis).inMotion}
-            handleHome={handleHome}
+            distance={distance}
+            distanceError={distanceError}
+            velocity={velocity}
+            velocityError={velocityError}
+            acceleration={acceleration}
+            accelerationError={accelerationError}
+            deceleration={deceleration}
+            decelerationError={decelerationError}
+            handleParameterValueChange={handleParameterValueChange}
+            handleMoveButtonClick={handleMoveButtonClick}
             handleMoveAbort={handleMoveAbort}
           />
-          <JogGroupBox
-            disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || !getAxisState(axes, axis).isJogActivated || inSequenceExecution}
-            handleJog={handleJog}
-            handleMoveAbort={handleMoveAbort}
-          />
+          <GroupBoxContainer flexDirection="column">
+            <JogGroupBox
+              isConnected={isConnected}
+              axes={axes}
+              axis={axis}
+              disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || !getAxisState(axes, axis).isJogActivated || inSequenceExecution}
+              jogVelocity={jogVelocity}
+              jogVelocityError={jogVelocityError}
+              handleParameterValueChange={handleParameterValueChange}
+              handleJogActivate={handleJogActivate}
+              handleJog={handleJog}
+              handleMoveAbort={handleMoveAbort}
+            />
+            <Row padding="0px 15px 0px 30px">
+              <InputField>
+                <Label width="65px">Position</Label>
+                <TextInput
+                  type="text"
+                  id="position"
+                  placeholder="counts"
+                  width="100px"
+                  value={getAxisState(axes, axis).position}
+                  disabled
+                />
+              </InputField>
+            </Row>
+            <HomeGroupBox
+              disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated || inSequenceExecution}
+              inMotion={getAxisState(axes, axis).inMotion}
+              handleHome={handleHome}
+              handleMoveAbort={handleMoveAbort}
+            />
+          </GroupBoxContainer>
         </GroupBoxContainer>
-        <MoveGroupBox
-          disabled={!isConnected || !getAxisState(axes, axis).isMotorEnabled || getAxisState(axes, axis).isJogActivated || inSequenceExecution}
-          inMotion={getAxisState(axes, axis).inMotion}
-          distance={distance}
-          distanceError={distanceError}
-          handleParameterValueChange={handleParameterValueChange}
-          handleMoveButtonClick={handleMoveButtonClick}
-          handleMoveAbort={handleMoveAbort}
-        />
-        <PositionGoupBox
-          position={getAxisState(axes, axis).position}
+        <LimitSensorsGroupBox
           negLimit={getAxisState(axes, axis).negLimit}
           negSWLimit={getAxisState(axes, axis).negSWLimit}
           posLimit={getAxisState(axes, axis).posLimit}
@@ -823,6 +937,14 @@ const mapStateToProps = state => {
     motorResponse: state.shared.motorResponse,
     distance: state.local.distance,
     distanceError: state.local.distanceError,
+    velocity: state.local.velocity,
+    velocityError: state.local.velocityError,
+    jogVelocity: state.local.jogVelocity,
+    jogVelocityError: state.local.jogVelocityError,
+    acceleration: state.local.acceleration,
+    accelerationError: state.local.accelerationError,
+    deceleration: state.local.deceleration,
+    decelerationError: state.local.decelerationError,
     status: state.shared.status,
     axis: state.shared.axis,
     axes: state.shared.axes,

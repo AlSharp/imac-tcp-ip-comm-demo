@@ -45,10 +45,13 @@ const handleASCIICommandSend = async (ipSerial, action) => {
 
 const handleDistanceMoveExecute = async (ipSerial, action) => {
   try {
-    const {axis, distance} = action.payload;
+    const {axis, distance, velocity, acceleration, deceleration} = action.payload;
     let commands = [
       `${axis} s r0xc8 256`,
       `${axis} s r0xca ${distance}`,
+      `${axis} s r0xcb ${+velocity*10}`,
+      `${axis} s r0xcc ${+acceleration/10}`,
+      `${axis} s r0xcd ${+deceleration/10}`,
       `${axis} t 1`
     ];
     for (const command of commands) {
@@ -64,9 +67,9 @@ const handleDistanceMoveExecute = async (ipSerial, action) => {
 
 const handleJog = async (ipSerial, action) => {
   try {
-    const {axis, direction} = action.payload;
+    const {axis, direction, jogVelocity} = action.payload;
     const commands = [
-      `${axis} s r0xc8 2`,
+      `${axis} s r0xcb ${+jogVelocity*10}`,
       `${axis} s r0xca ${direction === 'positive' ? '1' : '-1'}`,
       `${axis} t 1`
     ]
@@ -75,6 +78,20 @@ const handleJog = async (ipSerial, action) => {
     }
 
     ipSerial.startPolling(axis);
+  }
+  catch(error) {
+    throw error;
+  }
+}
+
+handleJogActivate = async (ipSerial, action) => {
+  try {
+    const {axis, activated, velocity, jogVelocity} = action.payload;
+    const value = activated ? '2' : '256';
+    await ipSerial.write(`${axis} s r0xc8 ${value}`);
+    if (velocity.length) {
+      await ipSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+    }
   }
   catch(error) {
     throw error;
@@ -123,10 +140,10 @@ const handleAxisParameterChange = async (ipSerial, action) => {
 
 const handleSequenceRun = async (ipSerial, action) => {
   try {
-    const {sequenceNumber} = action.payload;
+    const {axis, sequenceNumber} = action.payload;
     const value = 32768 + +sequenceNumber;
-    await ipSerial.write(`0 i r0 ${value}`);
-    ipSerial.startPolling('0', {inSequenceExecution: true});
+    await ipSerial.write(`${axis} i r0 ${value}`);
+    ipSerial.startPolling(axis, {inSequenceExecution: true});
   }
   catch(error) {
     throw error;
@@ -138,7 +155,7 @@ const handleSequenceStop = async (ipSerial, action) => {
     for (const axis of ipSerial.axes) {
       await ipSerial.write(`${axis} t 0`);
     }
-    await ipSerial.write('0 i r31 1');
+    await ipSerial.write(`${action.payload.axis} i r31 1`);
   }
   catch(error) {
     throw error;

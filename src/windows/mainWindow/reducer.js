@@ -5,6 +5,14 @@ const local = (state = {
   ASCIICommand: '',
   distance: '',
   distanceError: undefined,
+  velocity: '',
+  velocityError: undefined,
+  jogVelocity: '',
+  jogVelocityError: undefined,
+  acceleration: '',
+  accelerationError: undefined,
+  deceleration: '',
+  decelerationError: undefined,
   sequenceNumber: 1
 }, action) => {
   
@@ -21,10 +29,16 @@ const local = (state = {
         areJogParamsUpdated: true
       }
     }
-    case 'HANDLE_JOG_ACTIVATE': {
+    case 'HANDLE_JOG_ACTIVATE_SUCCEED': {
       return {
         ...state,
         areJogParamsUpdated: true
+      }
+    }
+    case 'HANDLE_JOG_ACTIVATE_REJECTED': {
+      return {
+        ...state,
+        areJogParamsUpdated: false
       }
     }
     case 'HANDLE_ASCII_COMMAND_CHANGE': {

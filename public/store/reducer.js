@@ -201,7 +201,7 @@ module.exports = (state = {
         status: 'Jog failed'
       }
     }
-    case 'HANDLE_JOG_ACTIVATE': {
+    case 'HANDLE_JOG_ACTIVATE_SUCCEED': {
       return {
         ...state,
         axes: state.axes.map(axis =>
@@ -212,7 +212,13 @@ module.exports = (state = {
           } :
           axis
         ),
-        status: 'Ok'
+        status: 'Jog is activated'
+      }
+    }
+    case 'HANDLE_JOG_ACTIVATE_REJECTED': {
+      return {
+        ...state,
+        status: 'Unable to activate jog'
       }
     }
     case 'HANDLE_BAUD_RATE_CHANGE_SUCCEED': {
