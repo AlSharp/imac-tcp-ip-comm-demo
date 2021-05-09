@@ -25,6 +25,8 @@ const handleMotorEnable = async (ipSerial, action) => {
       oldValue | Math.pow(2, 0) :
       oldValue & ~Math.pow(2, 0);
     const res = await ipSerial.write(`${axis} s r0xab ${newValue}`);
+    const r0xa0 = await ipSerial.write(`${axis} g r0xa0`);
+    ipSerial.axesState[axis]['r0xa0'].value = r0xa0;
     return res;
   }
   catch(error) {
@@ -86,11 +88,25 @@ const handleJog = async (ipSerial, action) => {
 
 handleJogActivate = async (ipSerial, action) => {
   try {
-    const {axis, activated, velocity, jogVelocity} = action.payload;
+    const {
+      axis, activated,
+      velocity, velocityError,
+      jogVelocity, jogVelocityError
+    } = action.payload;
     const value = activated ? '2' : '256';
     await ipSerial.write(`${axis} s r0xc8 ${value}`);
-    if (velocity.length) {
-      await ipSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+    if (activated) {
+      if (jogVelocity.length && !jogVelocityError) {
+        await ipSerial.write(`${axis} s r0xcb ${+jogVelocity*10}`);
+      } else {
+        await usbSerial.write(`${axis} s r0xcb 0`);
+      }
+    } else {
+      if (velocity.length && !velocityError) {
+        await usbSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+      } else {
+        await usbSerial.write(`${axis} s r0xcb 0`);
+      }
     }
   }
   catch(error) {

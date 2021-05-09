@@ -180,7 +180,10 @@ export const handleMoveAbort = () => (dispatch, getState) => {
 
 export const handleJogActivate = event => (dispatch, getState) => {
   const {axis, connectionType} = getState().shared;
-  const {jogVelocity, velocity} = getState().local;
+  const {
+    jogVelocity, jogVelocityError,
+    velocity, velocityError
+} = getState().local;
   dispatch(
     {
       type: 'HANDLE_JOG_ACTIVATE',

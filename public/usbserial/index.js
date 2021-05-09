@@ -20,21 +20,27 @@ class HardwareError extends Error {
 
 const setRegisterBits = function(prev, next) {
   const num = prev ^ next;
-  let binaryStr = num.toString(2, 32);
-  if (num < 0) {
-    binaryStr = binaryStr.slice(1);
-  }
-  const bits = [];
-  const binaryStrLength = binaryStr.length;
-  for (let i = 0; i < binaryStrLength; i++) {
-    if (binaryStr[i] === '1') {
-      bits.push(Math.abs(i - binaryStrLength + 1));
+  if (num !== 0) {
+    let binaryStr = num.toString(2, 32);
+    if (num < 0) {
+      binaryStr = binaryStr.slice(1);
     }
-  }
-  bits.sort((a, b) => a - b);
+    const bits = [];
+    const binaryStrLength = binaryStr.length;
+    for (let i = 0; i < binaryStrLength; i++) {
+      if (binaryStr[i] === '1') {
+        bits.push(Math.abs(i - binaryStrLength + 1));
+      }
+    }
+    bits.sort((a, b) => a - b);
 
-  for (let i = 0; i < bits.length; i++) {
-    this[bits[i]] = !this[bits[i]];
+    for (let i = 0; i < bits.length; i++) {
+      this[bits[i]] = !this[bits[i]];
+    }
+  } else {
+    for (let i = 0; i < Object.keys(this._bits).length; i++) {
+      this[i] = false;
+    }
   }
 }
 
@@ -186,6 +192,7 @@ const registerState = function(axis, register) {
         return this._bits[14];
       },
       set 15(value) {
+        _this.axesState[axis].isMotorEnabled = !value;
         this._bits[15] = value;
       },
       get 15() {
@@ -260,7 +267,7 @@ const registerState = function(axis, register) {
         return this._bits[26];
       },
       set 27(value) {
-        if (!_this.state.inSequenceExecution) {
+        if (!_this.axesState[axis].inSequenceExecution) {
           if (value) {
             _this.axesState[axis].inMotion = true;
           } else {
@@ -323,7 +330,7 @@ const registerState = function(axis, register) {
         const numValue = parseInt(val, 10);
         if (numValue !== this._value) {
           if (numValue > 0) {
-            _this.state.inSequenceExecution = false;
+            _this.axesState[axis].inSequenceExecution = false;
           }
         }
         this._value = numValue;
@@ -353,6 +360,19 @@ const registerState = function(axis, register) {
 const buildAxisState = function(axis) {
   const _this = this;
   this.axesState[axis] = {
+    _isMotorEnabled: false,
+    set isMotorEnabled(val) {
+      if (val !== this._isMotorEnabled) {
+        _this.store.dispatch({
+          type: 'HANDLE_MOTOR_ENABLE_SUCCEED',
+          payload: {axis, enabled: val}
+        })
+      }
+      this._isMotorEnabled = val;
+    },
+    get isMotorEnabled() {
+      return this._isMotorEnabled;
+    },
     _motorType: null,
     set motorType(val) {
       if (val !== this._motorType) {
@@ -374,13 +394,29 @@ const buildAxisState = function(axis) {
           payload: {axis, bitValue: val}
         });
       }
-      if (!val && !_this.state.inSequenceExecution) {
+      if (!val && !this._inSequenceExecution) {
         _this.stopPolling(axis);
       }
       this._inMotion = val;
     },
     get inMotion() {
       return this._inMotion;
+    },
+    _inSequenceExecution: false,
+    set inSequenceExecution(val) {
+      if (val !== this._inSequenceExecution) {
+        _this.store.dispatch({
+          type: 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET',
+          payload: {bitValue: val}
+        });
+      }
+      if (!val) {
+        _this.stopPolling(axis);
+      }
+      this._inSequenceExecution = val;
+    },
+    get inSequenceExecution() {
+      return this._inSequenceExecution;
     },
     _position: 0,
     set position(val) {
@@ -451,24 +487,6 @@ module.exports = class UsbSerial {
     this.port = null;
     this.parser = null;
     this.store = null;
-    this.state = {
-      _inSequenceExecution: false,
-      set inSequenceExecution(val) {
-        if (val !== this._inSequenceExecution) {
-          _this.store.dispatch({
-            type: 'HANDLE_IN_SEQUENCE_EXECUTION_BIT_SET',
-            payload: {bitValue: val}
-          });
-        }
-        if (!val) {
-          _this.stopPolling('0');
-        }
-        this._inSequenceExecution = val;
-      },
-      get inSequenceExecution() {
-        return this._inSequenceExecution;
-      }
-    };
     this.axes = [];
     this.axesState = {};
 
@@ -645,7 +663,7 @@ module.exports = class UsbSerial {
 
       if (options) {
         if (options.inSequenceExecution) {
-          this.state.inSequenceExecution = options.inSequenceExecution;
+          this.axesState[axis].inSequenceExecution = options.inSequenceExecution;
           await this.write(`${axis} i r31 0`);
         }
       }
@@ -655,7 +673,7 @@ module.exports = class UsbSerial {
           this.axesState[axis][`r${register}`]
             .value = await this.write(`${axis} g r${register}`);
         }
-        if (this.state.inSequenceExecution) {
+        if (this.axesState[axis].inSequenceExecution) {
           for (const register of this.CVMProgramRegisters) {
             this.axesState[axis][register]
               .value = await this.write(`${axis} i ${register}`);

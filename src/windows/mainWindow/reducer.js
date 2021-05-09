@@ -23,24 +23,6 @@ const local = (state = {
         stateReceived: true
       }
     }
-    case 'HANDLE_MOTOR_ENABLE': {
-      return {
-        ...state,
-        areJogParamsUpdated: true
-      }
-    }
-    case 'HANDLE_JOG_ACTIVATE_SUCCEED': {
-      return {
-        ...state,
-        areJogParamsUpdated: true
-      }
-    }
-    case 'HANDLE_JOG_ACTIVATE_REJECTED': {
-      return {
-        ...state,
-        areJogParamsUpdated: false
-      }
-    }
     case 'HANDLE_ASCII_COMMAND_CHANGE': {
       return {
         ...state,
@@ -53,9 +35,6 @@ const local = (state = {
         ...state,
         [parameterName]: action.payload,
         [`${parameterName}Error`]: validationError,
-        areJogParamsUpdated: parameterName !== 'distance' ? 
-          true :
-          state.areJogParamsUpdated
       }
     }
     case 'HANDLE_SEQUENCE_SELECT': {

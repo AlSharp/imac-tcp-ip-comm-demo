@@ -35,7 +35,9 @@ const handleMotorEnable = async (usbSerial, action) => {
       oldValue | Math.pow(2, 0) :
       oldValue & ~Math.pow(2, 0);
     const res = await usbSerial.write(`${axis} s r0xab ${newValue}`);
-    return res;
+    const r0xa0 = await usbSerial.write(`${axis} g r0xa0`);
+    usbSerial.axesState[axis]['r0xa0'].value = r0xa0;
+    return true;
   }
   catch(error) {
     throw error;
@@ -95,11 +97,25 @@ const handleJog = async (usbSerial, action) => {
 
 handleJogActivate = async (usbSerial, action) => {
   try {
-    const {axis, activated, velocity, jogVelocity} = action.payload;
+    const {
+      axis, activated,
+      velocity, velocityError,
+      jogVelocity, jogVelocityError
+    } = action.payload;
     const value = activated ? '2' : '256';
     await usbSerial.write(`${axis} s r0xc8 ${value}`);
-    if (velocity.length) {
-      await usbSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+    if (activated) {
+      if (jogVelocity.length && !jogVelocityError) {
+        await usbSerial.write(`${axis} s r0xcb ${+jogVelocity*10}`);
+      } else {
+        await usbSerial.write(`${axis} s r0xcb 0`);
+      }
+    } else {
+      if (velocity.length && !velocityError) {
+        await usbSerial.write(`${axis} s r0xcb ${+velocity*10}`);
+      } else {
+        await usbSerial.write(`${axis} s r0xcb 0`);
+      }
     }
   }
   catch(error) {

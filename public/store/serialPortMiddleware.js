@@ -15,10 +15,6 @@ module.exports = usbSerial => store => next => action => {
     switch(action.type) {
       case 'HANDLE_MOTOR_ENABLE': {
         handleMotorEnable(usbSerial, action)
-          .then(response => {
-            action.type = 'HANDLE_MOTOR_ENABLE_SUCCEED';
-            next(action);
-          })
           .catch(error => {
             // Do I need to show dialog message box with an error?
             // dialog.showErrorBox(title, content) 

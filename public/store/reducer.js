@@ -125,17 +125,17 @@ module.exports = (state = {
       }
     }
     case 'HANDLE_MOTOR_ENABLE_SUCCEED': {
+      const {axis, enabled} = action.payload;
       return {
         ...state,
-        axes: state.axes.map(axis =>
-          axis.number === action.payload.axis ?
+        axes: state.axes.map(axs =>
+          axs.number === axis ?
           {
-            ...axis,
-            isMotorEnabled: action.payload.enabled
+            ...axs,
+            isMotorEnabled: enabled
           } :
-          axis
+          axs
         ),
-        motorResponse: '',
         status: action.payload.enabled ? 'Motor enabled' : 'Motor disabled'
       }
     }

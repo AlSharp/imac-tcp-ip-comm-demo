@@ -23,7 +23,6 @@ import {
   handleJog,
   handleAxisChange,
   handleHome,
-  handleMotorTypeSelect,
   handleSequenceSelect,
   handleSequenceRun,
   handleSequenceStop
@@ -337,7 +336,7 @@ const LED = styled.div`
 
 const InputLED = styled.div`
   display: inline-block;
-  background-color: ${props => props.active ? 'green' : 'red'};
+  background-color: ${props => props.active ? 'red' : 'green'};
   width: 10px;
   height: 10px;
   border-radius: 5px;
@@ -753,7 +752,6 @@ class Window extends Component {
       handleJog,
       handleAxisChange,
       handleHome,
-      handleMotorTypeSelect,
       handleSequenceSelect,
       handleSequenceRun,
       handleSequenceStop
@@ -812,12 +810,12 @@ class Window extends Component {
               >
                 Motor type:
               </Label>
-              <SelectboxInput
+              <TextInput
+                type="text"
+                id="motor-type"
                 width="80px"
-                options={axes.length ? ['stepper', 'servo'] : []}
-                disabled={!isConnected || getAxisState(axes, axis).inMotion || inSequenceExecution}
                 value={getAxisState(axes, axis).motorType}
-                onChange={handleMotorTypeSelect}
+                disabled
               />
             </InputField>
           </Div>
@@ -976,7 +974,6 @@ export default connect(
     handleJog,
     handleAxisChange,
     handleHome,
-    handleMotorTypeSelect,
     handleSequenceSelect,
     handleSequenceRun,
     handleSequenceStop
