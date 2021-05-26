@@ -34,7 +34,7 @@ const handleMotorEnable = async (usbSerial, action) => {
     const newValue = enabled ?
       oldValue | Math.pow(2, 0) :
       oldValue & ~Math.pow(2, 0);
-    const res = await usbSerial.write(`${axis} s r0xab ${newValue}`);
+    await usbSerial.write(`${axis} s r0xab ${newValue}`);
     const r0xa0 = await usbSerial.write(`${axis} g r0xa0`);
     usbSerial.axesState[axis]['r0xa0'].value = r0xa0;
     return true;

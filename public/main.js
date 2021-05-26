@@ -26,7 +26,7 @@ app.on('ready', () => {
   // Create main window
   mainWindow = new BrowserWindow(
     {
-      title: 'IntelLiDrives Motion Server Client v.1.3.1',
+      title: 'IntelLiDrives Motion Server Client v.1.3.2',
       resizable: true,
       width: 474,
       height: 735,

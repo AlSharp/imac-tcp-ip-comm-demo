@@ -201,7 +201,7 @@ const registerState = function(axis, register) {
         return this._bits[14];
       },
       set 15(value) {
-        _this.axesState[axis].isMotorEnabled = value;
+        _this.axesState[axis].isMotorEnabled = !value;
         this._bits[15] = value;
       },
       get 15() {
@@ -374,7 +374,7 @@ const buildAxisState = function(axis) {
       if (val !== this._isMotorEnabled) {
         _this.store.dispatch({
           type: 'HANDLE_MOTOR_ENABLE_SUCCEED',
-          payload: {enabled: !val}
+          payload: {axis, enabled: val}
         })
       }
       this._isMotorEnabled = val;
