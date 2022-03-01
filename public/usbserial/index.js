@@ -591,17 +591,21 @@ module.exports = class UsbSerial {
 
   async getAxes() {
     try {
+      console.log('getting axes...');
       const nodes = Array.from(Array(16).keys());
       const axes = [];
-      for (let i = 0; i < nodes.length; i++) {
+      for (const nodeIndex of nodes) {
         try {
-          let res = await this.write('g r0x24', nodes[i], true);
+          console.log(`trying to connect axis ${nodeIndex}`);
+          let res = await this.write('g r0x24', nodes[nodeIndex], true);
+          console.log('res: ', res);
           if (res) {
-            axes.push(nodes[i].toString(16));
+            axes.push(nodes[nodeIndex].toString(16));
           }
         }
         catch(error) {
           if(error instanceof TimeoutError) {
+            console.log('Timeout Error! No axis found');
             return [];
           }
           if (!(error instanceof HardwareError)) {
@@ -623,6 +627,7 @@ module.exports = class UsbSerial {
   }
 
   async initAxesState(axes) {
+    console.log('initializing axes...');
     try {
       for (const axis of axes) {
         buildAxisState.call(this, axis);
